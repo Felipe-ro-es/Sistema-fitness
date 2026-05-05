@@ -14,8 +14,9 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   PlanoAlimentar.init({
-    descricao: DataTypes.STRING,
-    calorias: DataTypes.STRING
+    descricao: DataTypes.TEXT,
+    calorias: DataTypes.STRING,
+    usuarioId: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'PlanoAlimentar',

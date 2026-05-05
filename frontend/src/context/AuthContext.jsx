@@ -12,9 +12,6 @@ export function AuthProvider({ children }) {
     const stored = localStorage.getItem("user");
     if (stored) {
       setUser(JSON.parse(stored));
-    } else {
-      // dados fictícios para visualizar o frontend sem backend
-      setUser({ id: 1, nome: "Felipe Teste", email: "felipe@email.com" });
     }
     setLoading(false);
   }, []);
@@ -22,16 +19,16 @@ export function AuthProvider({ children }) {
   async function login(email, senha) {
     const data = await api.post("/auth/login", { email, senha });
     localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.usuario));
-    setUser(data.usuario);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    setUser(data.user);
     return data;
   }
 
   async function register(nome, email, senha) {
     const data = await api.post("/auth/register", { nome, email, senha });
     localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.usuario));
-    setUser(data.usuario);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    setUser(data.user);
     return data;
   }
 

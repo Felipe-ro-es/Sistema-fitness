@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-        Perfilfisico.hasMany(models.HistoricoProgresso, { foreignKey: 'perfilId' });
+        Perfilfisico.hasMany(models.historico_progresso, { foreignKey: 'perfilId' });
         Perfilfisico.belongsTo(models.Usuario, { foreignKey: 'usuarioId' });
         
     }
@@ -21,7 +21,8 @@ module.exports = (sequelize, DataTypes) => {
     idade: DataTypes.INTEGER,
     objetivo: DataTypes.STRING,
     obervacoes: DataTypes.STRING,
-    nivel_atv_fisica: DataTypes.STRING
+    nivel_atv_fisica: DataTypes.STRING,
+    parq: DataTypes.TEXT
   }, {
     sequelize,
     modelName: 'Perfilfisico',

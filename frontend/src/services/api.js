@@ -12,7 +12,7 @@ async function request(path, options = {}) {
   const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
   const data = await res.json().catch(() => ({}));
 
-  if (!res.ok) throw new Error(data.message || "Erro na requisição");
+  if (!res.ok) throw new Error(data.error || data.message || "Erro na requisição");
   return data;
 }
 

@@ -18,6 +18,16 @@ const niveisAtividade = [
   { value: "muito_intenso", label: "Extremamente ativo", desc: "Atleta ou trabalho físico pesado" },
 ];
 
+const PARQ_PERGUNTAS = [
+  "Seu médico já disse alguma vez que você possui algum problema de coração e que só deveria realizar atividade física supervisionada por profissionais de saúde?",
+  "Você sente dores no peito quando pratica atividade física?",
+  "No último mês, você sentiu dores no peito quando não estava praticando atividade física?",
+  "Você perde o equilíbrio devido à tontura ou já perdeu a consciência alguma vez?",
+  "Você possui algum problema ósseo ou articular (coluna, joelho, quadril) que poderia ser agravado pela prática de atividade física?",
+  "Seu médico está prescrevendo atualmente algum medicamento para pressão arterial ou problema do coração?",
+  "Você tem conhecimento de qualquer outra razão pela qual não deveria praticar atividade física?",
+];
+
 export default function Questionario() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
@@ -28,12 +38,13 @@ export default function Questionario() {
     nivel_atv_fisica: "",
     obervacoes: "",
   });
+  const [parq, setParq] = useState(Array(7).fill(false));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [hasProfile, setHasProfile] = useState(false);
 
   useEffect(() => {
-    api.get("/perfil-fisico")
+    api.get("/usuario/perfil-fisico")
       .then((data) => {
         if (data) {
           setForm({
@@ -44,6 +55,9 @@ export default function Questionario() {
             nivel_atv_fisica: data.nivel_atv_fisica ?? "",
             obervacoes: data.obervacoes ?? "",
           });
+          if (data.parq) {
+            try { setParq(JSON.parse(data.parq)); } catch {}
+          }
           setHasProfile(true);
         }
       })
@@ -54,16 +68,18 @@ export default function Questionario() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
+  function toggleParq(index) {
+    setParq((prev) => prev.map((v, i) => (i === index ? !v : v)));
+  }
+
+  const parqTemSim = parq.some(Boolean);
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      if (hasProfile) {
-        await api.put("/perfil-fisico", form);
-      } else {
-        await api.post("/perfil-fisico", form);
-      }
+      await api.post("/usuario/perfil-fisico", { ...form, parq: JSON.stringify(parq) });
       navigate("/dashboard");
     } catch (err) {
       setError(err.message || "Erro ao salvar perfil.");
@@ -83,12 +99,13 @@ export default function Questionario() {
         </div>
 
         {error && (
-          <div className="mb-6 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+          <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+
           {/* Dados básicos */}
           <div className="bg-white border border-gray-200 rounded-xl p-6">
             <h2 className="text-gray-900 font-semibold mb-4">Dados básicos</h2>
@@ -160,9 +177,82 @@ export default function Questionario() {
             </div>
           </div>
 
+          {/* PAR-Q */}
+          <div className="bg-white border border-gray-200 rounded-xl p-6">
+            <div className="flex items-start gap-3 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-blue-600 text-sm font-bold">Q</span>
+              </div>
+              <div>
+                <h2 className="text-gray-900 font-semibold">Questionário PAR-Q</h2>
+                <p className="text-gray-400 text-xs mt-0.5">
+                  Physical Activity Readiness Questionnaire — avalia sua prontidão para atividade física.
+                  Responda com sinceridade.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              {PARQ_PERGUNTAS.map((pergunta, i) => (
+                <div
+                  key={i}
+                  className={`flex items-start justify-between gap-4 p-3.5 rounded-lg border transition-colors ${
+                    parq[i]
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-200 bg-gray-50"
+                  }`}
+                >
+                  <p className={`text-sm leading-relaxed flex-1 ${parq[i] ? "text-red-700" : "text-gray-600"}`}>
+                    <span className="font-semibold text-gray-400 mr-2">{i + 1}.</span>
+                    {pergunta}
+                  </p>
+                  <div className="flex gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => !parq[i] && toggleParq(i)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
+                        parq[i]
+                          ? "bg-red-500 border-red-500 text-white"
+                          : "bg-white border-gray-300 text-gray-500 hover:border-red-300 hover:text-red-500"
+                      }`}
+                    >
+                      SIM
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => parq[i] && toggleParq(i)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
+                        !parq[i]
+                          ? "bg-green-500 border-green-500 text-white"
+                          : "bg-white border-gray-300 text-gray-500 hover:border-green-300 hover:text-green-500"
+                      }`}
+                    >
+                      NÃO
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Alerta se alguma resposta for SIM */}
+            {parqTemSim && (
+              <div className="mt-4 p-4 rounded-lg bg-red-50 border border-red-200 flex gap-3">
+                <span className="text-red-500 text-lg shrink-0">⚠️</span>
+                <div>
+                  <p className="text-red-700 font-semibold text-sm">Consulte um médico antes de iniciar</p>
+                  <p className="text-red-600 text-xs mt-1">
+                    Você respondeu SIM para uma ou mais perguntas do PAR-Q. Recomendamos consultar
+                    um médico antes de iniciar qualquer programa de exercícios. Seu plano será
+                    adaptado considerando essas informações.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Observações */}
           <div className="bg-white border border-gray-200 rounded-xl p-6">
-            <h2 className="text-gray-900 font-semibold mb-4">Observações, ex: alergias, problemas de saúde</h2>
+            <h2 className="text-gray-900 font-semibold mb-4">Observações adicionais</h2>
             <textarea
               name="obervacoes"
               value={form.obervacoes}
@@ -178,7 +268,7 @@ export default function Questionario() {
             disabled={loading || !form.objetivo || !form.nivel_atv_fisica}
             className="w-full bg-[#ff6600] py-3 rounded-lg font-semibold text-white hover:bg-[#e55a00] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {loading ? "Salvando..." : hasProfile ? "Atualizar perfil" : "Salvar e gerar planos"}
+            {loading ? "Salvando..." : hasProfile ? "Atualizar perfil" : "Salvar e continuar"}
           </button>
         </form>
       </div>

@@ -21,8 +21,8 @@ export default function Dashboard() {
   ];
 
   useEffect(() => {
-    api.get("/perfil-fisico").then(setPerfil).catch(() => setPerfil(MOCK_PERFIL));
-    api.get("/progresso").then(setHistorico).catch(() => setHistorico(MOCK_HISTORICO));
+    api.get("/usuario/perfil-fisico").then(setPerfil).catch(() => setPerfil(null));
+    api.get("/progresso").then(data => setHistorico(Array.isArray(data) ? data : [])).catch(() => setHistorico([]));
   }, []);
 
   const cards = [

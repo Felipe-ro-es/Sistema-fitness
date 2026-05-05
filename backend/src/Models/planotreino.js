@@ -15,8 +15,9 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   PlanoTreino.init({
-    descricao: DataTypes.STRING,
-    objetivo: DataTypes.STRING
+    descricao: DataTypes.TEXT,
+    objetivo: DataTypes.STRING,
+    usuarioId: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'PlanoTreino',

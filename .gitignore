@@ -1,2 +1,7 @@
 node_modules
-.en
+.env
+*.env
+.env.*
+*.sqlite
+*.sqlite3
+dist
