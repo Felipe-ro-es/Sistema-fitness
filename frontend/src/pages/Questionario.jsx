@@ -27,8 +27,8 @@ const INIT = {
   objetivo: "", prazo_objetivo: "", resultado_satisfatorio: "", tentou_antes: "",
   idade: "", sexo: "", altura: "", peso: "", peso_desejado: "", percentual_gordura: "", medidas_corporais: "",
   nivel_musculacao: "", tempo_treino: "", seguiu_dieta: "", sabe_executar_basicos: "",
-  dias_treino_semana: "", tempo_por_treino: "", periodo_treino: "", nivel_atv_fisica: "", trabalho_postura: "",
-  local_treino: "", equipamentos: "", academia_completa: "", preferencia_treino: [],
+  dias_disponiveis: [], tempo_por_treino: "", periodo_treino: "", nivel_atv_fisica: "", trabalho_postura: "",
+  local_treino: "", equipamentos: "", academia_completa: "", preferencia_treino: [], modalidades: [],
   tem_lesao: "", dores_frequentes: "", limitacao_fisica: "", exercicio_desconforto: "",
   acompanhamento_medico: "", usa_medicamentos: "", obervacoes: "",
   refeicoes_dia: "", restricao_alimentar: [], alimentos_nao_gosta: "", alimentos_gosta: "",
@@ -72,11 +72,12 @@ export default function Questionario() {
         percentual_gordura: safe(data.percentual_gordura), medidas_corporais: safe(data.medidas_corporais),
         nivel_musculacao: safe(data.nivel_musculacao), tempo_treino: safe(data.tempo_treino),
         seguiu_dieta: safe(data.seguiu_dieta), sabe_executar_basicos: safe(data.sabe_executar_basicos),
-        dias_treino_semana: safe(data.dias_treino_semana), tempo_por_treino: safe(data.tempo_por_treino),
+        dias_disponiveis: arr(data.dias_disponiveis), tempo_por_treino: safe(data.tempo_por_treino),
         periodo_treino: safe(data.periodo_treino), nivel_atv_fisica: safe(data.nivel_atv_fisica),
         trabalho_postura: safe(data.trabalho_postura), local_treino: safe(data.local_treino),
         equipamentos: safe(data.equipamentos), academia_completa: safe(data.academia_completa),
         preferencia_treino: arr(data.preferencia_treino),
+        modalidades: arr(data.modalidades),
         tem_lesao: safe(data.tem_lesao), dores_frequentes: safe(data.dores_frequentes),
         limitacao_fisica: safe(data.limitacao_fisica), exercicio_desconforto: safe(data.exercicio_desconforto),
         acompanhamento_medico: safe(data.acompanhamento_medico), usa_medicamentos: safe(data.usa_medicamentos),
@@ -108,7 +109,7 @@ export default function Questionario() {
       case 1: return !!form.objetivo;
       case 2: return !!(form.idade && form.altura && form.peso);
       case 3: return !!form.nivel_musculacao;
-      case 4: return !!(form.dias_treino_semana && form.nivel_atv_fisica);
+      case 4: return !!(form.dias_disponiveis.length > 0 && form.nivel_atv_fisica);
       case 5: return !!form.local_treino;
       case 6: return !!(form.tem_lesao && form.usa_medicamentos);
       case 7: return !!form.refeicoes_dia;
@@ -124,6 +125,8 @@ export default function Questionario() {
       await api.post("/usuario/perfil-fisico", {
         ...form,
         preferencia_treino: JSON.stringify(form.preferencia_treino),
+        modalidades: JSON.stringify(form.modalidades),
+        dias_disponiveis: JSON.stringify(form.dias_disponiveis),
         restricao_alimentar: JSON.stringify(form.restricao_alimentar),
         parq: JSON.stringify(parq),
       });
@@ -379,23 +382,45 @@ export default function Questionario() {
         {step === 4 && (
           <Card>
             <div>
-              <Label>Quantos dias por semana consegue treinar?</Label>
-              <div className="grid grid-cols-7 gap-1.5">
-                {[1, 2, 3, 4, 5, 6, 7].map((d) => (
+              <Label>Quais dias você tem disponibilidade para treinar?</Label>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  ["segunda", "Segunda"],
+                  ["terca", "Terça"],
+                  ["quarta", "Quarta"],
+                  ["quinta", "Quinta"],
+                  ["sexta", "Sexta"],
+                  ["sabado", "Sábado"],
+                  ["domingo", "Domingo"],
+                ].map(([value, label]) => (
                   <button
-                    key={d}
+                    key={value}
                     type="button"
-                    onClick={() => sf("dias_treino_semana", d)}
-                    className={`py-2.5 rounded-lg border text-sm font-bold text-center transition-colors ${
-                      form.dias_treino_semana === d
+                    onClick={() => toggle("dias_disponiveis", value)}
+                    className={`py-2.5 rounded-lg border text-sm font-medium text-center transition-colors flex items-center justify-center gap-1.5 ${
+                      (form.dias_disponiveis || []).includes(value)
                         ? "border-[#ff6600] bg-[#ff6600]/10 text-[#ff6600]"
                         : "border-gray-300 bg-gray-50 text-gray-600 hover:border-gray-400"
                     }`}
                   >
-                    {d}
+                    <span className={`w-3 h-3 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                      (form.dias_disponiveis || []).includes(value)
+                        ? "border-[#ff6600] bg-[#ff6600]"
+                        : "border-gray-400"
+                    }`}>
+                      {(form.dias_disponiveis || []).includes(value) && (
+                        <span className="text-white text-[8px] leading-none">✓</span>
+                      )}
+                    </span>
+                    {label}
                   </button>
                 ))}
               </div>
+              {form.dias_disponiveis.length > 0 && (
+                <p className="text-xs text-gray-400 mt-2">
+                  {form.dias_disponiveis.length} dia{form.dias_disponiveis.length > 1 ? "s" : ""} selecionado{form.dias_disponiveis.length > 1 ? "s" : ""}
+                </p>
+              )}
             </div>
             <div>
               <Label>Quanto tempo por treino?</Label>
@@ -457,6 +482,25 @@ export default function Questionario() {
                 {check("preferencia_treino", "funcional", "Funcional")}
                 {check("preferencia_treino", "cardio", "Cardio")}
                 {check("preferencia_treino", "calistenia", "Calistenia")}
+              </div>
+            </div>
+            <div>
+              <Label>Quais modalidades esportivas você gosta ou pratica? (pode marcar mais de um)</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {check("modalidades", "musculacao", "Musculação")}
+                {check("modalidades", "natacao", "Natação")}
+                {check("modalidades", "corrida", "Corrida")}
+                {check("modalidades", "ciclismo", "Ciclismo")}
+                {check("modalidades", "futebol", "Futebol")}
+                {check("modalidades", "basquete", "Basquete")}
+                {check("modalidades", "volei", "Vôlei")}
+                {check("modalidades", "lutas", "Lutas / Artes Marciais")}
+                {check("modalidades", "crossfit", "CrossFit")}
+                {check("modalidades", "yoga_pilates", "Yoga / Pilates")}
+                {check("modalidades", "tenis", "Tênis")}
+                {check("modalidades", "danca", "Dança")}
+                {check("modalidades", "surf", "Surf")}
+                {check("modalidades", "outros", "Outros")}
               </div>
             </div>
           </Card>

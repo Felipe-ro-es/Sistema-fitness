@@ -40,6 +40,8 @@ module.exports = (sequelize, DataTypes) => {
     equipamentos: DataTypes.TEXT,
     academia_completa: DataTypes.STRING,
     preferencia_treino: DataTypes.TEXT,
+    dias_disponiveis: DataTypes.TEXT,
+    modalidades: DataTypes.TEXT,
     // step 6
     tem_lesao: DataTypes.STRING,
     dores_frequentes: DataTypes.STRING,

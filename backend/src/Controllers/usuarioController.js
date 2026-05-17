@@ -6,7 +6,7 @@ const ALLOWED_FIELDS = [
   'prazo_objetivo', 'resultado_satisfatorio', 'tentou_antes',
   'nivel_musculacao', 'tempo_treino', 'seguiu_dieta', 'sabe_executar_basicos',
   'dias_treino_semana', 'tempo_por_treino', 'periodo_treino', 'trabalho_postura',
-  'local_treino', 'equipamentos', 'academia_completa', 'preferencia_treino',
+  'local_treino', 'equipamentos', 'academia_completa', 'preferencia_treino', 'dias_disponiveis', 'modalidades',
   'tem_lesao', 'dores_frequentes', 'limitacao_fisica', 'exercicio_desconforto',
   'acompanhamento_medico', 'usa_medicamentos',
   'refeicoes_dia', 'restricao_alimentar', 'alimentos_nao_gosta', 'alimentos_gosta',
