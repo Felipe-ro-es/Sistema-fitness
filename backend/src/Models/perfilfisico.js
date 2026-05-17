@@ -73,6 +73,8 @@ module.exports = (sequelize, DataTypes) => {
     treino_dividido: DataTypes.STRING,
     exercicios_favoritos: DataTypes.TEXT,
     exercicios_odeia: DataTypes.TEXT,
+    foto: DataTypes.STRING,
+    fotos: DataTypes.TEXT,
   }, {
     sequelize,
     modelName: 'Perfilfisico',

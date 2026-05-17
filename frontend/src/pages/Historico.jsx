@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import AppLayout from "../components/AppLayout";
 import { api } from "../services/api";
 
+const BASE_URL = "http://localhost:3000";
+
 export default function Historico() {
   const [registros, setRegistros] = useState([]);
   const [form, setForm] = useState({ peso: "", obervacoes: "" });
+  const [fotos, setFotos] = useState([]);
+  const [fotoPreviews, setFotoPreviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -36,15 +40,33 @@ export default function Historico() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
+  function handleFotos(e) {
+    const novos = Array.from(e.target.files).slice(0, 3 - fotos.length);
+    setFotos(prev => [...prev, ...novos].slice(0, 3));
+    setFotoPreviews(prev => [...prev, ...novos.map(f => URL.createObjectURL(f))].slice(0, 3));
+    e.target.value = "";
+  }
+
+  function removerFoto(i) {
+    setFotos(prev => prev.filter((_, idx) => idx !== i));
+    setFotoPreviews(prev => prev.filter((_, idx) => idx !== i));
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setSuccess("");
     setSaving(true);
     try {
-      await api.post("/progresso", form);
+      const fd = new FormData();
+      fd.append("peso", form.peso);
+      fd.append("obervacoes", form.obervacoes);
+      fotos.forEach(f => fd.append("fotos", f));
+      await api.postForm("/progresso", fd);
       setSuccess("Registro salvo com sucesso!");
       setForm({ peso: "", obervacoes: "" });
+      setFotos([]);
+      setFotoPreviews([]);
       fetchHistorico();
     } catch (err) {
       setError(err.message || "Erro ao salvar registro.");
@@ -131,6 +153,39 @@ export default function Historico() {
               />
             </div>
 
+            <div className="flex flex-col">
+              <label className="text-gray-600 text-sm mb-1.5">
+                Fotos de progresso (opcional — até 3)
+              </label>
+              {fotoPreviews.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 mb-2">
+                  {fotoPreviews.map((src, i) => (
+                    <div key={i} className="relative">
+                      <img src={src} alt={`preview ${i + 1}`} className="w-full h-24 object-contain rounded-lg bg-gray-50 border border-gray-200" />
+                      <button
+                        type="button"
+                        onClick={() => removerFoto(i)}
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs leading-none"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {fotos.length < 3 && (
+                <label className="flex flex-col items-center justify-center w-full h-20 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#ff6600] transition-colors bg-gray-50">
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span className="text-sm">Adicionar foto ({fotos.length}/3)</span>
+                  </div>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleFotos} />
+                </label>
+              )}
+            </div>
+
             <button
               type="submit"
               disabled={saving}
@@ -155,41 +210,58 @@ export default function Historico() {
           ) : (
             <div className="space-y-3">
               {registros.map((r, i) => (
-                <div
-                  key={r.id ?? i}
-                  className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between"
-                >
-                  <div>
-                    <p className="text-gray-900 font-semibold text-lg">{r.peso} kg</p>
-                    {r.obervacoes && (
-                      <p className="text-gray-400 text-sm mt-0.5">{r.obervacoes}</p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <p className="text-gray-500 text-xs">
-                      {r.createdAt
-                        ? new Date(r.createdAt).toLocaleDateString("pt-BR", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })
-                        : "—"}
-                    </p>
-                    {i > 0 && registros[i - 1] && (
-                      <p
-                        className={`text-xs mt-0.5 font-medium ${
-                          r.peso < registros[i - 1].peso
-                            ? "text-[#ff6600]"
-                            : r.peso > registros[i - 1].peso
-                            ? "text-red-400"
-                            : "text-gray-400"
-                        }`}
-                      >
-                        {r.peso < registros[i - 1].peso ? "▼" : r.peso > registros[i - 1].peso ? "▲" : "—"}{" "}
-                        {Math.abs(r.peso - registros[i - 1].peso).toFixed(1)} kg
+                <div key={r.id ?? i} className="bg-white border border-gray-200 rounded-xl p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-900 font-semibold text-lg">{r.peso} kg</p>
+                      {r.obervacoes && (
+                        <p className="text-gray-400 text-sm mt-0.5">{r.obervacoes}</p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-gray-500 text-xs">
+                        {r.createdAt
+                          ? new Date(r.createdAt).toLocaleDateString("pt-BR", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })
+                          : "—"}
                       </p>
-                    )}
+                      {i > 0 && registros[i - 1] && (
+                        <p
+                          className={`text-xs mt-0.5 font-medium ${
+                            r.peso < registros[i - 1].peso
+                              ? "text-[#ff6600]"
+                              : r.peso > registros[i - 1].peso
+                              ? "text-red-400"
+                              : "text-gray-400"
+                          }`}
+                        >
+                          {r.peso < registros[i - 1].peso ? "▼" : r.peso > registros[i - 1].peso ? "▲" : "—"}{" "}
+                          {Math.abs(r.peso - registros[i - 1].peso).toFixed(1)} kg
+                        </p>
+                      )}
+                    </div>
                   </div>
+                  {r.fotos && (() => {
+                    try {
+                      const lista = JSON.parse(r.fotos);
+                      if (!lista.length) return null;
+                      return (
+                        <div className={`mt-3 grid gap-2 ${lista.length === 1 ? "grid-cols-1" : "grid-cols-3"}`}>
+                          {lista.map((src, i) => (
+                            <img
+                              key={i}
+                              src={`${BASE_URL}${src}`}
+                              alt={`Foto ${i + 1}`}
+                              className="w-full max-h-72 object-contain rounded-lg border border-gray-100 bg-gray-50"
+                            />
+                          ))}
+                        </div>
+                      );
+                    } catch { return null; }
+                  })()}
                 </div>
               ))}
             </div>

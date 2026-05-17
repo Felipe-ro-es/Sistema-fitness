@@ -1,4 +1,5 @@
-const { Usuario, Perfilfisico } = require('../models');
+const path = require('path');
+const { Usuario, Perfilfisico, historico_progresso } = require('../models');
 
 const ALLOWED_FIELDS = [
   'peso', 'altura', 'idade', 'objetivo', 'nivel_atv_fisica', 'obervacoes', 'parq',
@@ -46,14 +47,28 @@ const salvarPerfilFisico = async (req, res) => {
         .map(k => [k, req.body[k]])
     );
 
+    if (req.files && req.files.length > 0) {
+      dados.fotos = JSON.stringify(req.files.map(f => `/uploads/${f.filename}`));
+    }
+
     let perfil = await Perfilfisico.findOne({ where: { usuarioId: req.user.id } });
-    if (perfil) {
+    const isUpdate = !!perfil;
+
+    if (isUpdate) {
       await perfil.update(dados);
-      res.json(perfil);
     } else {
       perfil = await Perfilfisico.create({ ...dados, usuarioId: req.user.id });
-      res.status(201).json(perfil);
     }
+
+    if (dados.peso) {
+      await historico_progresso.create({
+        peso: dados.peso,
+        fotos: dados.fotos ?? null,
+        perfilId: perfil.id,
+      });
+    }
+
+    res.status(isUpdate ? 200 : 201).json(perfil);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

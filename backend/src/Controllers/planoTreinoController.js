@@ -84,7 +84,12 @@ function buildPrompt(perfil) {
     parqAlerta ? `\nAVISO PAR-Q (respondeu SIM):\n${parqAlerta}\nAdapte o plano considerando essas condições, priorizando segurança.` : null,
   ].filter(Boolean);
 
-  return `Crie um plano de treino semanal personalizado para uma pessoa com as seguintes características:\n\n${linhas.join('\n')}\n\nFormate com os dias da semana (Segunda a Domingo). Para cada dia: nome do treino, exercícios com séries, repetições e descanso. Inclua aquecimento e alongamento. Seja detalhado e prático.`;
+  const modalidadesArr = safeArr(perfil.modalidades);
+  const restricaoModalidade = modalidadesArr.length > 0
+    ? `\nRESTRIÇÃO OBRIGATÓRIA: O plano deve conter EXCLUSIVAMENTE exercícios e atividades das modalidades selecionadas (${modalidadesArr.join(', ')}). NÃO inclua exercícios de outras modalidades. Por exemplo, se o usuário pratica apenas natação, o plano deve conter somente treinos de natação — nunca musculação, corrida ou qualquer outra modalidade não listada.`
+    : '';
+
+  return `Crie um plano de treino semanal personalizado para uma pessoa com as seguintes características:\n\n${linhas.join('\n')}${restricaoModalidade}\n\nFormate com os dias da semana (Segunda a Domingo). Para cada dia: nome do treino, exercícios com séries, repetições e descanso. Inclua aquecimento e alongamento. Seja detalhado e prático.`;
 }
 
 const gerar = async (req, res) => {
