@@ -16,6 +16,8 @@ const REFEICAO_CONFIG = {
   "jantar": { icon: "🌙", cor: "border-l-purple-400", badge: "bg-purple-100 text-purple-600" },
   "ceia": { icon: "✨", cor: "border-l-indigo-300", badge: "bg-indigo-100 text-indigo-600" },
   "lanche": { icon: "🍎", cor: "border-l-green-300", badge: "bg-green-100 text-green-600" },
+  "refeição": { icon: "🍽️", cor: "border-l-blue-400", badge: "bg-blue-100 text-blue-600" },
+  "refeicao": { icon: "🍽️", cor: "border-l-blue-400", badge: "bg-blue-100 text-blue-600" },
 };
 
 function getConfig(titulo) {
@@ -219,7 +221,7 @@ function limparMd(texto) {
 function parseAlimentar(texto) {
   if (!texto) return [];
   const linhas = texto.split("\n");
-  const regex = /^[#*\s]*(café|cafe|lanche|almoço|almoco|jantar|ceia|refeição|refeicao)/i;
+  const regex = /^[#*\s\d.]*(café|cafe|lanche|almoço|almoco|jantar|ceia|refeição|refeicao)/i;
   const inicio = linhas.findIndex(l => regex.test(l.trim()));
   if (inicio === -1) return [];
 
@@ -235,7 +237,7 @@ function parseAlimentar(texto) {
       const horarioMatch = linha.match(/(\d{1,2}[h:]\d{0,2})/i);
       const calMatch = linha.match(/(\d{3,4}\s*(?:kcal|cal))/i);
       atual = {
-        titulo: linha.replace(/[—–:]\s*\d{1,2}[h:]\d{0,2}/, "").replace(/\(.*?\)/, "").trim(),
+        titulo: linha.replace(/^\d+\.\s*/, "").replace(/[—–:]\s*\d{1,2}[h:]\d{0,2}/, "").replace(/\(.*?\)/, "").trim(),
         horario: horarioMatch ? horarioMatch[1] : "",
         calorias: calMatch ? calMatch[1] : "",
         itens: [],

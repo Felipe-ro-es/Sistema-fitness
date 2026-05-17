@@ -10,25 +10,88 @@ function getOpenAI() {
   return new OpenAI({ apiKey: parsed.OPENAI_API_KEY });
 }
 
+const PARQ_PERGUNTAS = [
+  'Algum médico já disse que você possui problema cardíaco',
+  'Você sente dor no peito durante atividade física',
+  'Já perdeu equilíbrio ou consciência durante exercícios',
+  'Possui problema ósseo ou articular',
+  'Usa medicamentos para pressão ou coração',
+];
+
+function buildParqAlerta(parqJson) {
+  if (!parqJson) return '';
+  try {
+    const respostas = JSON.parse(parqJson);
+    const alertas = PARQ_PERGUNTAS.filter((_, i) => respostas[i] === true);
+    return alertas.map(p => `- ${p}`).join('\n');
+  } catch {
+    return '';
+  }
+}
+
+function safeArr(json) {
+  try { return json ? JSON.parse(json) : []; } catch { return []; }
+}
+
+function buildPrompt(perfil) {
+  const parqAlerta = buildParqAlerta(perfil.parq);
+  const prefTreino = safeArr(perfil.preferencia_treino).join(', ');
+
+  const linhas = [
+    `PERFIL FÍSICO:`,
+    perfil.sexo ? `- Sexo: ${perfil.sexo}` : null,
+    `- Peso: ${perfil.peso}kg | Altura: ${perfil.altura}cm | Idade: ${perfil.idade} anos`,
+    perfil.peso_desejado ? `- Peso desejado: ${perfil.peso_desejado}kg` : null,
+    ``,
+    `OBJETIVO:`,
+    `- Objetivo: ${perfil.objetivo}`,
+    perfil.prazo_objetivo ? `- Prazo: ${perfil.prazo_objetivo}` : null,
+    perfil.resultado_satisfatorio ? `- Resultado esperado: ${perfil.resultado_satisfatorio}` : null,
+    ``,
+    `EXPERIÊNCIA:`,
+    perfil.nivel_musculacao ? `- Nível na musculação: ${perfil.nivel_musculacao}` : null,
+    perfil.tempo_treino ? `- Tempo treinando: ${perfil.tempo_treino}` : null,
+    perfil.sabe_executar_basicos ? `- Executa básicos: ${perfil.sabe_executar_basicos}` : null,
+    ``,
+    `DISPONIBILIDADE:`,
+    perfil.dias_treino_semana ? `- Dias por semana: ${perfil.dias_treino_semana}` : null,
+    perfil.tempo_por_treino ? `- Tempo por treino: ${perfil.tempo_por_treino}` : null,
+    perfil.periodo_treino ? `- Período preferido: ${perfil.periodo_treino}` : null,
+    perfil.nivel_atv_fisica ? `- Rotina diária: ${perfil.nivel_atv_fisica}` : null,
+    ``,
+    `ESTRUTURA:`,
+    perfil.local_treino ? `- Local: ${perfil.local_treino}` : null,
+    perfil.equipamentos ? `- Equipamentos: ${perfil.equipamentos}` : null,
+    perfil.academia_completa ? `- Academia completa: ${perfil.academia_completa}` : null,
+    prefTreino ? `- Preferências de treino: ${prefTreino}` : null,
+    ``,
+    `PREFERÊNCIAS:`,
+    perfil.preferencia_duracao_treino ? `- Duração: ${perfil.preferencia_duracao_treino}` : null,
+    perfil.gosta_cardio ? `- Gosta de cardio: ${perfil.gosta_cardio}` : null,
+    perfil.treino_dividido ? `- Tipo: ${perfil.treino_dividido}` : null,
+    perfil.exercicios_favoritos ? `- Exercícios favoritos: ${perfil.exercicios_favoritos}` : null,
+    perfil.exercicios_odeia ? `- Exercícios que odeia: ${perfil.exercicios_odeia}` : null,
+    ``,
+    `SAÚDE:`,
+    perfil.tem_lesao === 'sim' ? `- Possui lesão: Sim` : null,
+    perfil.dores_frequentes === 'sim' ? `- Dores frequentes: Sim` : null,
+    perfil.limitacao_fisica === 'sim' ? `- Limitação física: Sim` : null,
+    perfil.exercicio_desconforto === 'sim' ? `- Exercício com desconforto: Sim` : null,
+    perfil.usa_medicamentos === 'sim' ? `- Usa medicamentos: Sim` : null,
+    perfil.faz_cardio ? `- Faz cardio atualmente: ${perfil.faz_cardio}` : null,
+    perfil.obervacoes ? `- Observações: ${perfil.obervacoes}` : null,
+    parqAlerta ? `\nAVISO PAR-Q (respondeu SIM):\n${parqAlerta}\nAdapte o plano considerando essas condições, priorizando segurança.` : null,
+  ].filter(Boolean);
+
+  return `Crie um plano de treino semanal personalizado para uma pessoa com as seguintes características:\n\n${linhas.join('\n')}\n\nFormate com os dias da semana (Segunda a Domingo). Para cada dia: nome do treino, exercícios com séries, repetições e descanso. Inclua aquecimento e alongamento. Seja detalhado e prático.`;
+}
+
 const gerar = async (req, res) => {
   try {
     const perfil = await Perfilfisico.findOne({ where: { usuarioId: req.user.id } });
     if (!perfil) {
       return res.status(404).json({ error: 'Perfil físico não encontrado. Preencha o questionário primeiro.' });
     }
-
-    const parqAlerta = buildParqAlerta(perfil.parq);
-
-    const prompt = `Crie um plano de treino semanal personalizado para uma pessoa com as seguintes características:
-- Peso: ${perfil.peso}kg
-- Altura: ${perfil.altura}cm
-- Idade: ${perfil.idade} anos
-- Objetivo: ${perfil.objetivo}
-- Nível de atividade física: ${perfil.nivel_atv_fisica}
-${perfil.obervacoes ? `- Observações: ${perfil.obervacoes}` : ''}
-${parqAlerta ? `\nAVISO PAR-Q (respostas SIM do questionário de prontidão física):\n${parqAlerta}\nAdapte o plano considerando essas condições, priorizando segurança e exercícios de baixo impacto onde necessário.` : ''}
-
-Formate o plano com os dias da semana (Segunda a Domingo), para cada dia liste: nome do treino, exercícios com séries, repetições e tempo de descanso. Inclua dicas de aquecimento e alongamento. Seja detalhado e prático.`;
 
     const openai = getOpenAI();
     const completion = await openai.chat.completions.create({
@@ -38,7 +101,7 @@ Formate o plano com os dias da semana (Segunda a Domingo), para cada dia liste: 
           role: 'system',
           content: 'Você é um personal trainer experiente e certificado. Crie planos de treino personalizados, seguros e eficazes baseados nas características do aluno.',
         },
-        { role: 'user', content: prompt },
+        { role: 'user', content: buildPrompt(perfil) },
       ],
       max_tokens: 2500,
     });
@@ -82,26 +145,5 @@ const deletar = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-const PARQ_PERGUNTAS = [
-  'Seu médico já disse que você possui algum problema cardíaco',
-  'Você sente dores no peito ao praticar atividade física',
-  'No último mês sentiu dores no peito sem estar praticando atividade física',
-  'Você perde o equilíbrio por tontura ou já perdeu a consciência',
-  'Possui problema ósseo ou articular que pode piorar com atividade física',
-  'Seu médico prescreve medicamento para pressão arterial ou coração',
-  'Existe outro motivo pelo qual não deveria praticar atividade física',
-];
-
-function buildParqAlerta(parqJson) {
-  if (!parqJson) return '';
-  try {
-    const respostas = JSON.parse(parqJson);
-    const alertas = PARQ_PERGUNTAS.filter((_, i) => respostas[i] === true);
-    return alertas.map(p => `- ${p}`).join('\n');
-  } catch {
-    return '';
-  }
-}
 
 module.exports = { gerar, listar, obter, deletar };
