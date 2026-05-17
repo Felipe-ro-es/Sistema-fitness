@@ -120,7 +120,7 @@ const gerar = async (req, res) => {
     const caloriesMatch = descricao.match(/(\d{3,4})\s*(kcal|calorias)/i);
     const calorias = caloriesMatch ? caloriesMatch[1] : 'Ver plano';
 
-    const plano = await PlanoAlimentar.create({ descricao, calorias, usuarioId: req.user.id });
+    const plano = await PlanoAlimentar.create({ descricao, calorias, usuarioId: req.user.id, perfilId: perfil.id });
     res.status(201).json(plano);
   } catch (err) {
     res.status(500).json({ error: err.message });

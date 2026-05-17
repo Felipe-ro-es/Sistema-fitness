@@ -108,7 +108,7 @@ const gerar = async (req, res) => {
     });
 
     const descricao = completion.choices[0].message.content;
-    const plano = await PlanoTreino.create({ descricao, objetivo: perfil.objetivo, usuarioId: req.user.id });
+    const plano = await PlanoTreino.create({ descricao, objetivo: perfil.objetivo, usuarioId: req.user.id, perfilId: perfil.id });
     res.status(201).json(plano);
   } catch (err) {
     res.status(500).json({ error: err.message });

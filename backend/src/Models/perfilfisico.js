@@ -6,6 +6,8 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Perfilfisico.hasMany(models.historico_progresso, { foreignKey: 'perfilId' });
       Perfilfisico.belongsTo(models.Usuario, { foreignKey: 'usuarioId' });
+      Perfilfisico.hasMany(models.PlanoAlimentar, { foreignKey: 'perfilId' });
+      Perfilfisico.hasMany(models.PlanoTreino, { foreignKey: 'perfilId' });
     }
   }
   Perfilfisico.init({

@@ -11,13 +11,14 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       PlanoTreino.belongsTo(models.Usuario, { foreignKey: 'usuarioId' });
-      
+      PlanoTreino.belongsTo(models.Perfilfisico, { foreignKey: 'perfilId' });
     }
   }
   PlanoTreino.init({
     descricao: DataTypes.TEXT,
     objetivo: DataTypes.STRING,
-    usuarioId: DataTypes.INTEGER
+    usuarioId: DataTypes.INTEGER,
+    perfilId: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'PlanoTreino',
