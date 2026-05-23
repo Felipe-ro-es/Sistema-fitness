@@ -89,14 +89,22 @@ export default function Landing() {
           Pronto para transformar seu corpo?
         </h2>
         <p className="text-gray-400 mt-4 max-w-lg mx-auto">
-          Junte-se a milhares de pessoas que já estão usando a IA para alcançar seus objetivos fitness.
+          Crie sua conta e receba seu plano personalizado de treino e alimentação gerado por IA.
         </p>
-        <Link
-          to="/register"
-          className="mt-8 inline-block bg-[#ff6600] px-8 py-3.5 rounded-lg font-semibold text-white hover:bg-[#e55a00] transition-colors"
-        >
-          Criar conta gratuita
-        </Link>
+        <div className="mt-8 flex gap-4 justify-center flex-wrap">
+          <Link
+            to="/register"
+            className="inline-block bg-[#ff6600] px-8 py-3.5 rounded-lg font-semibold text-white hover:bg-[#e55a00] transition-colors"
+          >
+            Criar conta
+          </Link>
+          <Link
+            to="/login"
+            className="inline-block border border-gray-300 px-8 py-3.5 rounded-lg font-semibold text-gray-600 hover:border-gray-500 hover:text-gray-900 transition-colors"
+          >
+            Já tenho conta
+          </Link>
+        </div>
       </section>
 
       {/* Footer */}

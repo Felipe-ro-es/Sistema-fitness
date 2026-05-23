@@ -10,14 +10,12 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      PlanoAlimentar.belongsTo(models.Usuario, { foreignKey: 'usuarioId' });
       PlanoAlimentar.belongsTo(models.Perfilfisico, { foreignKey: 'perfilId' });
     }
   }
   PlanoAlimentar.init({
     descricao: DataTypes.TEXT,
     calorias: DataTypes.STRING,
-    usuarioId: DataTypes.INTEGER,
     perfilId: DataTypes.INTEGER
   }, {
     sequelize,

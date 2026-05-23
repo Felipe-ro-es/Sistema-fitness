@@ -23,27 +23,14 @@ export default function Hero() {
           to="/register"
           className="bg-[#ff6600] px-6 py-3 rounded-lg font-semibold text-white hover:bg-[#e55a00] transition-colors"
         >
-          Começar agora — é grátis
+          Criar conta
         </Link>
-        <a
-          href="#how-it-works"
+        <Link
+          to="/login"
           className="border border-gray-300 px-6 py-3 rounded-lg font-semibold text-gray-600 hover:border-gray-500 hover:text-gray-900 transition-colors"
         >
-          Ver como funciona
-        </a>
-      </div>
-
-      <div className="mt-16 flex gap-10 flex-wrap justify-center text-center">
-        {[
-          { number: "10k+", label: "Usuários ativos" },
-          { number: "98%", label: "Taxa de satisfação" },
-          { number: "3x", label: "Mais resultados" },
-        ].map(({ number, label }) => (
-          <div key={label}>
-            <p className="text-3xl font-bold text-gray-900">{number}</p>
-            <p className="text-gray-400 text-sm mt-1">{label}</p>
-          </div>
-        ))}
+          Entrar
+        </Link>
       </div>
     </section>
   );

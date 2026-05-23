@@ -20,11 +20,11 @@ const registrar = async (req, res) => {
     const perfil = await Perfilfisico.findOne({ where: { usuarioId: req.user.id } });
     if (!perfil) return res.status(404).json({ error: 'Perfil físico não encontrado. Preencha o questionário primeiro.' });
 
-    const { peso, obervacoes } = req.body;
+    const { peso, obervacoes, data } = req.body;
     const fotos = req.files && req.files.length > 0
       ? JSON.stringify(req.files.map(f => `/uploads/${f.filename}`))
       : null;
-    const entrada = await historico_progresso.create({ peso, obervacoes, fotos, perfilId: perfil.id });
+    const entrada = await historico_progresso.create({ peso, obervacoes, fotos, data: data || new Date(), perfilId: perfil.id });
 
     await perfil.update({ peso });
 

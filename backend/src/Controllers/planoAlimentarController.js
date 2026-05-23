@@ -120,7 +120,7 @@ const gerar = async (req, res) => {
     const caloriesMatch = descricao.match(/(\d{3,4})\s*(kcal|calorias)/i);
     const calorias = caloriesMatch ? caloriesMatch[1] : 'Ver plano';
 
-    const plano = await PlanoAlimentar.create({ descricao, calorias, usuarioId: req.user.id, perfilId: perfil.id });
+    const plano = await PlanoAlimentar.create({ descricao, calorias, perfilId: perfil.id });
     res.status(201).json(plano);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -129,8 +129,10 @@ const gerar = async (req, res) => {
 
 const listar = async (req, res) => {
   try {
+    const perfil = await Perfilfisico.findOne({ where: { usuarioId: req.user.id } });
+    if (!perfil) return res.status(404).json({ error: 'Perfil físico não encontrado' });
     const planos = await PlanoAlimentar.findAll({
-      where: { usuarioId: req.user.id },
+      where: { perfilId: perfil.id },
       order: [['createdAt', 'DESC']],
     });
     res.json(planos);
@@ -141,7 +143,9 @@ const listar = async (req, res) => {
 
 const obter = async (req, res) => {
   try {
-    const plano = await PlanoAlimentar.findOne({ where: { id: req.params.id, usuarioId: req.user.id } });
+    const perfil = await Perfilfisico.findOne({ where: { usuarioId: req.user.id } });
+    if (!perfil) return res.status(404).json({ error: 'Perfil físico não encontrado' });
+    const plano = await PlanoAlimentar.findOne({ where: { id: req.params.id, perfilId: perfil.id } });
     if (!plano) return res.status(404).json({ error: 'Plano não encontrado' });
     res.json(plano);
   } catch (err) {
@@ -151,7 +155,9 @@ const obter = async (req, res) => {
 
 const deletar = async (req, res) => {
   try {
-    const deleted = await PlanoAlimentar.destroy({ where: { id: req.params.id, usuarioId: req.user.id } });
+    const perfil = await Perfilfisico.findOne({ where: { usuarioId: req.user.id } });
+    if (!perfil) return res.status(404).json({ error: 'Perfil físico não encontrado' });
+    const deleted = await PlanoAlimentar.destroy({ where: { id: req.params.id, perfilId: perfil.id } });
     if (!deleted) return res.status(404).json({ error: 'Plano não encontrado' });
     res.json({ message: 'Plano removido com sucesso' });
   } catch (err) {

@@ -10,14 +10,12 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      PlanoTreino.belongsTo(models.Usuario, { foreignKey: 'usuarioId' });
       PlanoTreino.belongsTo(models.Perfilfisico, { foreignKey: 'perfilId' });
     }
   }
   PlanoTreino.init({
     descricao: DataTypes.TEXT,
     objetivo: DataTypes.STRING,
-    usuarioId: DataTypes.INTEGER,
     perfilId: DataTypes.INTEGER
   }, {
     sequelize,
