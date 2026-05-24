@@ -17,7 +17,6 @@ module.exports = (sequelize, DataTypes) => {
   historico_progresso.init({
     peso: DataTypes.FLOAT,
     obervacoes: DataTypes.STRING,
-    foto: DataTypes.STRING,
     fotos: DataTypes.TEXT,
     data: DataTypes.DATEONLY
   }, {

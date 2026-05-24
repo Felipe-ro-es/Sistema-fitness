@@ -1,5 +1,5 @@
 const OpenAI = require('openai');
-const { PlanoTreino, Perfilfisico } = require('../models');
+const { PlanoTreino, Perfilfisico, DadosFisico, PreferenciasTreino, SaudeRestricao, PreferenciasAlimentar } = require('../models');
 const dotenv = require('dotenv');
 const fs = require('fs');
 const path = require('path');
@@ -92,12 +92,35 @@ function buildPrompt(perfil) {
   return `Crie um plano de treino semanal personalizado para uma pessoa com as seguintes características:\n\n${linhas.join('\n')}${restricaoModalidade}\n\nFormate com os dias da semana (Segunda a Domingo). Para cada dia: nome do treino, exercícios com séries, repetições e descanso. Inclua aquecimento e alongamento. Seja detalhado e prático.`;
 }
 
+const INCLUDES = [
+  { model: DadosFisico },
+  { model: PreferenciasTreino },
+  { model: SaudeRestricao },
+  { model: PreferenciasAlimentar },
+];
+
+function flattenPerfil(perfil) {
+  const strip = obj => {
+    if (!obj) return {};
+    const { id, perfilId, createdAt, updatedAt, ...rest } = obj.toJSON ? obj.toJSON() : obj;
+    return rest;
+  };
+  return {
+    ...strip(perfil.DadosFisico),
+    ...strip(perfil.PreferenciasTreino),
+    ...strip(perfil.SaudeRestricao),
+    ...strip(perfil.PreferenciasAlimentar),
+    fotos: perfil.fotos,
+  };
+}
+
 const gerar = async (req, res) => {
   try {
-    const perfil = await Perfilfisico.findOne({ where: { usuarioId: req.user.id } });
-    if (!perfil) {
+    const perfilRaw = await Perfilfisico.findOne({ where: { usuarioId: req.user.id }, include: INCLUDES });
+    if (!perfilRaw) {
       return res.status(404).json({ error: 'Perfil físico não encontrado. Preencha o questionário primeiro.' });
     }
+    const perfil = flattenPerfil(perfilRaw);
 
     const openai = getOpenAI();
     const completion = await openai.chat.completions.create({
@@ -113,7 +136,7 @@ const gerar = async (req, res) => {
     });
 
     const descricao = completion.choices[0].message.content;
-    const plano = await PlanoTreino.create({ descricao, objetivo: perfil.objetivo, perfilId: perfil.id });
+    const plano = await PlanoTreino.create({ descricao, objetivo: perfil.objetivo, perfilId: perfilRaw.id });
     res.status(201).json(plano);
   } catch (err) {
     res.status(500).json({ error: err.message });
