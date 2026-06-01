@@ -5,9 +5,14 @@ import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import Questionario from "../pages/Questionario";
 import PlanoTreino from "../pages/PlanoTreino";
-import PlanoAlimentar from "../pages/PlanoAlimentar";
 import Historico from "../pages/Historico";
 import ProtectedRoute from "../components/ProtectedRoute";
+import PersonalLogin from "../pages/PersonalLogin";
+import PersonalRegister from "../pages/PersonalRegister";
+import PersonalDashboard from "../pages/PersonalDashboard";
+import PersonalPlanDetail from "../pages/PersonalPlanDetail";
+import PersonalUsuarios from "../pages/PersonalUsuarios";
+import PersonalProtectedRoute from "../components/PersonalProtectedRoute";
 
 export default function AppRoutes() {
   return (
@@ -30,12 +35,24 @@ export default function AppRoutes() {
           element={<ProtectedRoute><PlanoTreino /></ProtectedRoute>}
         />
         <Route
-          path="/plano-alimentar"
-          element={<ProtectedRoute><PlanoAlimentar /></ProtectedRoute>}
-        />
-        <Route
           path="/historico"
           element={<ProtectedRoute><Historico /></ProtectedRoute>}
+        />
+
+        {/* Área do Personal Trainer */}
+        <Route path="/personal/login" element={<PersonalLogin />} />
+        <Route path="/personal/register" element={<PersonalRegister />} />
+        <Route
+          path="/personal/dashboard"
+          element={<PersonalProtectedRoute><PersonalDashboard /></PersonalProtectedRoute>}
+        />
+        <Route
+          path="/personal/plano/:id"
+          element={<PersonalProtectedRoute><PersonalPlanDetail /></PersonalProtectedRoute>}
+        />
+        <Route
+          path="/personal/usuarios"
+          element={<PersonalProtectedRoute><PersonalUsuarios /></PersonalProtectedRoute>}
         />
       </Routes>
     </BrowserRouter>

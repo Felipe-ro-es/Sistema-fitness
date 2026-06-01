@@ -5,7 +5,6 @@ const links = [
   { to: "/dashboard", label: "Dashboard", icon: "⊞" },
   { to: "/questionario", label: "Perfil Físico", icon: "◎" },
   { to: "/plano-treino", label: "Plano de Treino", icon: "◈" },
-  { to: "/plano-alimentar", label: "Plano Alimentar", icon: "◉" },
   { to: "/historico", label: "Histórico", icon: "◷" },
 ];
 

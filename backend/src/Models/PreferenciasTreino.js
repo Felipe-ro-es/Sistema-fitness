@@ -10,13 +10,11 @@ module.exports = (sequelize, DataTypes) => {
   PreferenciasTreino.init({
     nivel_musculacao: DataTypes.STRING,
     tempo_treino: DataTypes.STRING,
-    seguiu_dieta: DataTypes.STRING,
     sabe_executar_basicos: DataTypes.STRING,
     dias_treino_semana: DataTypes.INTEGER,
     tempo_por_treino: DataTypes.STRING,
     periodo_treino: DataTypes.STRING,
     nivel_atv_fisica: DataTypes.STRING,
-    trabalho_postura: DataTypes.STRING,
     dias_disponiveis: DataTypes.TEXT,
     local_treino: DataTypes.STRING,
     equipamentos: DataTypes.TEXT,

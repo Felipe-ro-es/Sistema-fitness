@@ -5,13 +5,8 @@ import { Link } from "react-router";
 const features = [
   {
     icon: "◈",
-    title: "Plano de Treino IA",
+    title: "Plano de Treino",
     desc: "Plano semanal personalizado de acordo com seu nível, objetivo e disponibilidade de tempo.",
-  },
-  {
-    icon: "◉",
-    title: "Plano Alimentar IA",
-    desc: "Cardápio diário balanceado com calorias e macronutrientes calculados para o seu corpo.",
   },
   {
     icon: "◷",
@@ -28,7 +23,7 @@ const features = [
 const steps = [
   { number: "01", title: "Crie sua conta", desc: "Cadastro rápido com nome, email e senha." },
   { number: "02", title: "Preencha seu perfil", desc: "Informe peso, altura, idade, objetivo e nível de atividade." },
-  { number: "03", title: "Receba seus planos", desc: "A IA gera imediatamente seu plano de treino e alimentação." },
+  { number: "03", title: "Receba seu plano", desc: "Seu plano de treino é gerado automaticamente com base no seu perfil." },
   { number: "04", title: "Acompanhe o progresso", desc: "Registre sua evolução e ajuste os planos conforme necessário." },
 ];
 
@@ -89,7 +84,7 @@ export default function Landing() {
           Pronto para transformar seu corpo?
         </h2>
         <p className="text-gray-400 mt-4 max-w-lg mx-auto">
-          Crie sua conta e receba seu plano personalizado de treino e alimentação gerado por IA.
+          Crie sua conta e receba seu plano de treino totalmente personalizado.
         </p>
         <div className="mt-8 flex gap-4 justify-center flex-wrap">
           <Link

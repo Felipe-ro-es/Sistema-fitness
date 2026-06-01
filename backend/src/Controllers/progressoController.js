@@ -34,4 +34,18 @@ const registrar = async (req, res) => {
   }
 };
 
-module.exports = { listar, registrar };
+const deletar = async (req, res) => {
+  try {
+    const perfil = await Perfilfisico.findOne({ where: { usuarioId: req.user.id } });
+    if (!perfil) return res.status(404).json({ error: 'Perfil físico não encontrado' });
+    const deleted = await historico_progresso.destroy({
+      where: { id: req.params.id, perfilId: perfil.id },
+    });
+    if (!deleted) return res.status(404).json({ error: 'Registro não encontrado' });
+    res.json({ message: 'Registro deletado com sucesso' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+module.exports = { listar, registrar, deletar };

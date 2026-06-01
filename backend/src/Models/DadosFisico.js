@@ -9,9 +9,8 @@ module.exports = (sequelize, DataTypes) => {
   }
   DadosFisico.init({
     objetivo: DataTypes.STRING,
-    prazo_objetivo: DataTypes.STRING,
     resultado_satisfatorio: DataTypes.TEXT,
-    tentou_antes: DataTypes.STRING,
+    data_nascimento: DataTypes.DATEONLY,
     peso: DataTypes.FLOAT,
     altura: DataTypes.FLOAT,
     idade: DataTypes.INTEGER,

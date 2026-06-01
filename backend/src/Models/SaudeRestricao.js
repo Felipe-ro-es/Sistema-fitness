@@ -15,12 +15,6 @@ module.exports = (sequelize, DataTypes) => {
     acompanhamento_medico: DataTypes.STRING,
     usa_medicamentos: DataTypes.STRING,
     parq: DataTypes.TEXT,
-    horas_sono: DataTypes.FLOAT,
-    nivel_estresse: DataTypes.STRING,
-    agua_dia: DataTypes.STRING,
-    consome_alcool: DataTypes.STRING,
-    fuma: DataTypes.STRING,
-    faz_cardio: DataTypes.STRING,
   }, {
     sequelize,
     modelName: 'SaudeRestricao',

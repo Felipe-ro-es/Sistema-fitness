@@ -4,10 +4,11 @@ const cors = require('cors');
 const path = require('path');
 
 const authRoutes = require('./routes/authRoutes');
+const authPersonalRoutes = require('./routes/authPersonalRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const planoTreinoRoutes = require('./routes/planoTreinoRoutes');
-const planoAlimentarRoutes = require('./routes/planoAlimentarRoutes');
 const progressoRoutes = require('./routes/progressoRoutes');
+const personalRoutes = require('./routes/personalRoutes');
 const errorMiddleware = require('./Middlewares/errorMiddleware');
 
 const app = express();
@@ -17,10 +18,11 @@ app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.use('/auth', authRoutes);
+app.use('/auth/personal', authPersonalRoutes);
 app.use('/usuario', usuarioRoutes);
 app.use('/plano-treino', planoTreinoRoutes);
-app.use('/plano-alimentar', planoAlimentarRoutes);
 app.use('/progresso', progressoRoutes);
+app.use('/personal', personalRoutes);
 
 app.use(errorMiddleware);
 

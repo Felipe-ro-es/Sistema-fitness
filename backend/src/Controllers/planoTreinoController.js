@@ -1,5 +1,5 @@
 const OpenAI = require('openai');
-const { PlanoTreino, Perfilfisico, DadosFisico, PreferenciasTreino, SaudeRestricao, PreferenciasAlimentar } = require('../models');
+const { PlanoTreino, Perfilfisico, DadosFisico, PreferenciasTreino, SaudeRestricao, PersonalTrainer } = require('../models');
 const dotenv = require('dotenv');
 const fs = require('fs');
 const path = require('path');
@@ -45,7 +45,6 @@ function buildPrompt(perfil) {
     ``,
     `OBJETIVO:`,
     `- Objetivo: ${perfil.objetivo}`,
-    perfil.prazo_objetivo ? `- Prazo: ${perfil.prazo_objetivo}` : null,
     perfil.resultado_satisfatorio ? `- Resultado esperado: ${perfil.resultado_satisfatorio}` : null,
     ``,
     `EXPERIÊNCIA:`,
@@ -79,7 +78,6 @@ function buildPrompt(perfil) {
     perfil.limitacao_fisica === 'sim' ? `- Limitação física: Sim` : null,
     perfil.exercicio_desconforto === 'sim' ? `- Exercício com desconforto: Sim` : null,
     perfil.usa_medicamentos === 'sim' ? `- Usa medicamentos: Sim` : null,
-    perfil.faz_cardio ? `- Faz cardio atualmente: ${perfil.faz_cardio}` : null,
     perfil.obervacoes ? `- Observações: ${perfil.obervacoes}` : null,
     parqAlerta ? `\nAVISO PAR-Q (respondeu SIM):\n${parqAlerta}\nAdapte o plano considerando essas condições, priorizando segurança.` : null,
   ].filter(Boolean);
@@ -96,7 +94,6 @@ const INCLUDES = [
   { model: DadosFisico },
   { model: PreferenciasTreino },
   { model: SaudeRestricao },
-  { model: PreferenciasAlimentar },
 ];
 
 function flattenPerfil(perfil) {
@@ -109,7 +106,6 @@ function flattenPerfil(perfil) {
     ...strip(perfil.DadosFisico),
     ...strip(perfil.PreferenciasTreino),
     ...strip(perfil.SaudeRestricao),
-    ...strip(perfil.PreferenciasAlimentar),
     fotos: perfil.fotos,
   };
 }
@@ -136,12 +132,14 @@ const gerar = async (req, res) => {
     });
 
     const descricao = completion.choices[0].message.content;
-    const plano = await PlanoTreino.create({ descricao, objetivo: perfil.objetivo, perfilId: perfilRaw.id });
+    const plano = await PlanoTreino.create({ descricao, objetivo: perfil.objetivo, perfilId: perfilRaw.id, status: 'pendente' });
     res.status(201).json(plano);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
+const PERSONAL_INCLUDE = [{ model: PersonalTrainer, as: 'Personal', attributes: ['nome', 'cref'] }];
 
 const listar = async (req, res) => {
   try {
@@ -149,6 +147,7 @@ const listar = async (req, res) => {
     if (!perfil) return res.status(404).json({ error: 'Perfil físico não encontrado' });
     const planos = await PlanoTreino.findAll({
       where: { perfilId: perfil.id },
+      include: PERSONAL_INCLUDE,
       order: [['createdAt', 'DESC']],
     });
     res.json(planos);
@@ -161,9 +160,25 @@ const obter = async (req, res) => {
   try {
     const perfil = await Perfilfisico.findOne({ where: { usuarioId: req.user.id } });
     if (!perfil) return res.status(404).json({ error: 'Perfil físico não encontrado' });
-    const plano = await PlanoTreino.findOne({ where: { id: req.params.id, perfilId: perfil.id } });
+    const plano = await PlanoTreino.findOne({
+      where: { id: req.params.id, perfilId: perfil.id },
+      include: PERSONAL_INCLUDE,
+    });
     if (!plano) return res.status(404).json({ error: 'Plano não encontrado' });
     res.json(plano);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const salvarFeedback = async (req, res) => {
+  try {
+    const perfil = await Perfilfisico.findOne({ where: { usuarioId: req.user.id } });
+    if (!perfil) return res.status(404).json({ error: 'Perfil físico não encontrado' });
+    const plano = await PlanoTreino.findOne({ where: { id: req.params.id, perfilId: perfil.id } });
+    if (!plano) return res.status(404).json({ error: 'Plano não encontrado' });
+    await plano.update({ feedback_usuario: req.body.feedback, status: 'revisao' });
+    res.json({ message: 'Feedback salvo com sucesso' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -181,4 +196,4 @@ const deletar = async (req, res) => {
   }
 };
 
-module.exports = { gerar, listar, obter, deletar };
+module.exports = { gerar, listar, obter, deletar, salvarFeedback };

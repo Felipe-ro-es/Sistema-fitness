@@ -10,8 +10,6 @@ const STEPS = [
   { title: "Rotina e disponibilidade", desc: "Isso melhora aderência." },
   { title: "Estrutura disponível", desc: "Muito importante para gerar treino correto." },
   { title: "Restrições físicas e saúde", desc: "Aqui entra o cuidado mais importante." },
-  { title: "Alimentação", desc: "Essencial para dieta personalizada." },
-  { title: "Hábitos e estilo de vida", desc: "Isso impacta bastante resultado." },
   { title: "Preferências do treino", desc: "Isso melhora retenção do usuário." },
 ];
 
@@ -24,18 +22,16 @@ const PARQ_PERGUNTAS = [
 ];
 
 const INIT = {
-  objetivo: "", prazo_objetivo: "", resultado_satisfatorio: "", tentou_antes: "",
-  idade: "", sexo: "", altura: "", peso: "", peso_desejado: "", percentual_gordura: "", medidas_corporais: "",
-  nivel_musculacao: "", tempo_treino: "", seguiu_dieta: "", sabe_executar_basicos: "",
-  dias_disponiveis: [], tempo_por_treino: "", periodo_treino: "", nivel_atv_fisica: "", trabalho_postura: "",
+  objetivo: "", resultado_satisfatorio: "",
+  data_nascimento: "", sexo: "", altura: "", peso: "", peso_desejado: "", percentual_gordura: "", medidas_corporais: "",
+  nivel_musculacao: "", tempo_treino: "", sabe_executar_basicos: "",
+  dias_disponiveis: [], tempo_por_treino: "", periodo_treino: "", nivel_atv_fisica: "",
   local_treino: "", equipamentos: "", academia_completa: "", preferencia_treino: [], modalidades: [],
   tem_lesao: "", dores_frequentes: "", limitacao_fisica: "", exercicio_desconforto: "",
   acompanhamento_medico: "", usa_medicamentos: "", obervacoes: "",
-  refeicoes_dia: "", restricao_alimentar: [], alimentos_nao_gosta: "", alimentos_gosta: "",
-  dificuldade_dieta: "", cozinha_refeicoes: "", gasto_alimentacao: "",
-  horas_sono: "", nivel_estresse: "", agua_dia: "", consome_alcool: "", fuma: "", faz_cardio: "",
   preferencia_duracao_treino: "", gosta_cardio: "", treino_dividido: "",
   exercicios_favoritos: "", exercicios_odeia: "",
+  modalidade_outra: "",
 };
 
 function Card({ children, className = "" }) {
@@ -67,32 +63,27 @@ export default function Questionario() {
       const safe = (v) => v ?? "";
       const arr = (v) => { try { return v ? JSON.parse(v) : []; } catch { return []; } };
       setForm({
-        objetivo: safe(data.objetivo), prazo_objetivo: safe(data.prazo_objetivo),
-        resultado_satisfatorio: safe(data.resultado_satisfatorio), tentou_antes: safe(data.tentou_antes),
-        idade: safe(data.idade), sexo: safe(data.sexo), altura: safe(data.altura),
+        objetivo: safe(data.objetivo),
+        resultado_satisfatorio: safe(data.resultado_satisfatorio),
+        data_nascimento: safe(data.data_nascimento), sexo: safe(data.sexo), altura: safe(data.altura),
         peso: safe(data.peso), peso_desejado: safe(data.peso_desejado),
         percentual_gordura: safe(data.percentual_gordura), medidas_corporais: safe(data.medidas_corporais),
         nivel_musculacao: safe(data.nivel_musculacao), tempo_treino: safe(data.tempo_treino),
-        seguiu_dieta: safe(data.seguiu_dieta), sabe_executar_basicos: safe(data.sabe_executar_basicos),
+        sabe_executar_basicos: safe(data.sabe_executar_basicos),
         dias_disponiveis: arr(data.dias_disponiveis), tempo_por_treino: safe(data.tempo_por_treino),
         periodo_treino: safe(data.periodo_treino), nivel_atv_fisica: safe(data.nivel_atv_fisica),
-        trabalho_postura: safe(data.trabalho_postura), local_treino: safe(data.local_treino),
+        local_treino: safe(data.local_treino),
         equipamentos: safe(data.equipamentos), academia_completa: safe(data.academia_completa),
         preferencia_treino: arr(data.preferencia_treino),
         modalidades: arr(data.modalidades),
         tem_lesao: safe(data.tem_lesao), dores_frequentes: safe(data.dores_frequentes),
         limitacao_fisica: safe(data.limitacao_fisica), exercicio_desconforto: safe(data.exercicio_desconforto),
         acompanhamento_medico: safe(data.acompanhamento_medico), usa_medicamentos: safe(data.usa_medicamentos),
-        obervacoes: safe(data.obervacoes), refeicoes_dia: safe(data.refeicoes_dia),
-        restricao_alimentar: arr(data.restricao_alimentar),
-        alimentos_nao_gosta: safe(data.alimentos_nao_gosta), alimentos_gosta: safe(data.alimentos_gosta),
-        dificuldade_dieta: safe(data.dificuldade_dieta), cozinha_refeicoes: safe(data.cozinha_refeicoes),
-        gasto_alimentacao: safe(data.gasto_alimentacao), horas_sono: safe(data.horas_sono),
-        nivel_estresse: safe(data.nivel_estresse), agua_dia: safe(data.agua_dia),
-        consome_alcool: safe(data.consome_alcool), fuma: safe(data.fuma), faz_cardio: safe(data.faz_cardio),
+        obervacoes: safe(data.obervacoes),
         preferencia_duracao_treino: safe(data.preferencia_duracao_treino),
         gosta_cardio: safe(data.gosta_cardio), treino_dividido: safe(data.treino_dividido),
         exercicios_favoritos: safe(data.exercicios_favoritos), exercicios_odeia: safe(data.exercicios_odeia),
+        modalidade_outra: safe(data.modalidade_outra),
       });
       if (data.parq) { try { setParq(JSON.parse(data.parq)); } catch {} }
       setHasProfile(true);
@@ -109,13 +100,11 @@ export default function Questionario() {
   const canProceed = () => {
     switch (step) {
       case 1: return !!form.objetivo;
-      case 2: return !!(form.idade && form.altura && form.peso);
+      case 2: return !!(form.data_nascimento && form.altura && form.peso);
       case 3: return !!form.nivel_musculacao;
       case 4: return !!(form.dias_disponiveis.length > 0 && form.nivel_atv_fisica);
       case 5: return !!form.local_treino;
       case 6: return !!(form.tem_lesao && form.usa_medicamentos);
-      case 7: return !!form.refeicoes_dia;
-      case 8: return !!(form.horas_sono && form.nivel_estresse);
       default: return true;
     }
   };
@@ -137,12 +126,18 @@ export default function Questionario() {
     setLoading(true);
     try {
       const fd = new FormData();
+      const idade = form.data_nascimento
+        ? Math.floor((Date.now() - new Date(form.data_nascimento)) / (365.25 * 24 * 3600 * 1000))
+        : "";
+      const modalidadesFinais = form.modalidades.map(m =>
+        m === "outros" && form.modalidade_outra.trim() ? form.modalidade_outra.trim() : m
+      );
       const campos = {
         ...form,
+        idade,
         preferencia_treino: JSON.stringify(form.preferencia_treino),
-        modalidades: JSON.stringify(form.modalidades),
+        modalidades: JSON.stringify(modalidadesFinais),
         dias_disponiveis: JSON.stringify(form.dias_disponiveis),
-        restricao_alimentar: JSON.stringify(form.restricao_alimentar),
         parq: JSON.stringify(parq),
       };
       Object.entries(campos).forEach(([k, v]) => fd.append(k, v));
@@ -312,9 +307,12 @@ export default function Questionario() {
         </div>
 
         {/* Título da etapa */}
-        <div className="mb-5 bg-orange-50 border border-orange-100 rounded-xl px-5 py-4">
-          <h2 className="font-bold text-gray-900">{step}. {title}</h2>
-          <p className="text-gray-500 text-sm mt-0.5">{desc}</p>
+        <div className="mb-5 bg-orange-50 border border-orange-100 rounded-xl px-5 py-4 flex items-start justify-between">
+          <div>
+            <h2 className="font-bold text-gray-900">{step}. {title}</h2>
+            <p className="text-gray-500 text-sm mt-0.5">{desc}</p>
+          </div>
+          <span className="text-xs text-[#ff6600] shrink-0 ml-4 mt-0.5">(obrigatório) = campo obrigatório</span>
         </div>
 
         {error && (
@@ -327,7 +325,7 @@ export default function Questionario() {
         {step === 1 && (
           <div className="space-y-4">
             <Card>
-              <Label>Qual é seu principal objetivo?</Label>
+              <Label>Qual é seu principal objetivo? <span className="text-[#ff6600] font-normal normal-case">(obrigatório)</span></Label>
               <div className="space-y-2">
                 {choice("objetivo", "emagrecimento", "Emagrecimento")}
                 {choice("objetivo", "ganho_de_massa", "Ganho de massa muscular")}
@@ -339,9 +337,7 @@ export default function Questionario() {
               </div>
             </Card>
             <Card>
-              {textInput("prazo_objetivo", "Em quanto tempo deseja atingir resultados?", "Ex: 3 meses, 6 meses...")}
               {textarea("resultado_satisfatorio", "Qual seria um resultado satisfatório para você?", "Descreva como seria o resultado ideal...")}
-              {yesno("tentou_antes", "Você já tentou atingir esse objetivo antes?")}
             </Card>
           </div>
         )}
@@ -349,21 +345,70 @@ export default function Questionario() {
         {/* ── Etapa 2: Dados físicos ────────────────────────────────────── */}
         {step === 2 && (
           <Card>
-            <div className="grid grid-cols-3 gap-4">
-              {numInput("idade", "Idade", "28")}
-              {numInput("altura", "Altura (cm)", "175")}
-              {numInput("peso", "Peso atual (kg)", "75.5")}
+            <div>
+              <label className="text-sm text-gray-600 mb-1.5 block">Data de nascimento <span className="text-[#ff6600] text-xs">(obrigatório)</span></label>
+              <input
+                type="date"
+                value={form.data_nascimento}
+                onChange={e => sf("data_nascimento", e.target.value)}
+                max={new Date().toISOString().split("T")[0]}
+                className="w-full p-3 rounded-lg bg-gray-100 text-gray-900 border border-gray-300 focus:outline-none focus:border-[#ff6600] transition-colors"
+              />
+              {form.data_nascimento && (
+                <p className="text-xs text-gray-400 mt-1.5">
+                  {Math.floor((Date.now() - new Date(form.data_nascimento)) / (365.25 * 24 * 3600 * 1000))} anos
+                </p>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {numInput("altura", "Altura (cm) (obrigatório)", "175")}
+              {numInput("peso", "Peso atual (kg) (obrigatório)", "75.5")}
             </div>
             <div className="grid grid-cols-2 gap-4">
               {numInput("peso_desejado", "Peso desejado (kg)", "70")}
               {numInput("percentual_gordura", "% Gordura corporal (opcional)", "20")}
             </div>
             <div>
-              <Label>Sexo</Label>
+              <Label>Identidade de gênero</Label>
               <div className="grid grid-cols-2 gap-2">
                 {choice("sexo", "masculino", "Masculino")}
                 {choice("sexo", "feminino", "Feminino")}
+                {choice("sexo", "trans_masculino", "Trans masculino")}
+                {choice("sexo", "trans_feminino", "Trans feminino")}
+                {choice("sexo", "nao_binario", "Não-binário")}
+                {choice("sexo", "genero_fluido", "Gênero fluido")}
+                {choice("sexo", "agênero", "Agênero")}
+                {choice("sexo", "bigênero", "Bigênero")}
+                {choice("sexo", "androginx", "Andrógino/Andrógina")}
+                {choice("sexo", "intersexo", "Intersexo")}
+                {choice("sexo", "queer", "Queer")}
+                {choice("sexo", "prefiro_nao_informar", "Prefiro não informar")}
+                <button
+                  type="button"
+                  onClick={() => sf("sexo", "outro")}
+                  className={`p-3 rounded-lg border text-sm text-left transition-colors flex items-center gap-2 ${
+                    form.sexo === "outro" || (form.sexo && !["masculino","feminino","trans_masculino","trans_feminino","nao_binario","genero_fluido","agênero","bigênero","androginx","intersexo","queer","prefiro_nao_informar"].includes(form.sexo))
+                      ? "border-[#ff6600] bg-[#ff6600]/10 text-[#ff6600] font-medium"
+                      : "border-gray-300 bg-gray-50 text-gray-600 hover:border-gray-400"
+                  }`}
+                >
+                  <span className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 ${
+                    form.sexo === "outro" || (form.sexo && !["masculino","feminino","trans_masculino","trans_feminino","nao_binario","genero_fluido","agênero","bigênero","androginx","intersexo","queer","prefiro_nao_informar"].includes(form.sexo))
+                      ? "border-[#ff6600] bg-[#ff6600]" : "border-gray-400"
+                  }`} />
+                  Outro
+                </button>
               </div>
+              {(form.sexo === "outro" || (form.sexo && !["masculino","feminino","trans_masculino","trans_feminino","nao_binario","genero_fluido","agênero","bigênero","androginx","intersexo","queer","prefiro_nao_informar","outro"].includes(form.sexo))) && (
+                <input
+                  type="text"
+                  autoFocus
+                  value={["outro"].includes(form.sexo) ? "" : form.sexo}
+                  onChange={e => sf("sexo", e.target.value || "outro")}
+                  placeholder="Descreva sua identidade de gênero..."
+                  className="mt-2 w-full p-3 rounded-lg bg-gray-100 text-gray-900 border border-[#ff6600] focus:outline-none transition-colors"
+                />
+              )}
             </div>
             {textarea("medidas_corporais", "Medidas corporais (opcional)", "Ex: cintura 80cm, quadril 95cm, braço 35cm...")}
           </Card>
@@ -373,7 +418,7 @@ export default function Questionario() {
         {step === 3 && (
           <Card>
             <div>
-              <Label>Qual seu nível na musculação?</Label>
+              <Label>Qual seu nível na musculação? <span className="text-[#ff6600] font-normal normal-case">(obrigatório)</span></Label>
               <div className="space-y-2">
                 {choice("nivel_musculacao", "iniciante", "Iniciante", "Menos de 1 ano")}
                 {choice("nivel_musculacao", "intermediario", "Intermediário", "1 a 3 anos")}
@@ -391,7 +436,6 @@ export default function Questionario() {
                 ["mais_5a", "Mais de 5 anos"],
               ])}
             </div>
-            {yesno("seguiu_dieta", "Você já seguiu dieta antes?")}
             {yesno("sabe_executar_basicos", "Você sabe executar exercícios básicos? (agachamento, supino, etc.)")}
           </Card>
         )}
@@ -400,7 +444,7 @@ export default function Questionario() {
         {step === 4 && (
           <Card>
             <div>
-              <Label>Quais dias você tem disponibilidade para treinar?</Label>
+              <Label>Quais dias você tem disponibilidade para treinar? <span className="text-[#ff6600] font-normal normal-case">(obrigatório)</span></Label>
               <div className="grid grid-cols-4 gap-2">
                 {[
                   ["segunda", "Segunda"],
@@ -460,20 +504,12 @@ export default function Questionario() {
               </div>
             </div>
             <div>
-              <Label>Sua rotina é:</Label>
+              <Label>Sua rotina é: <span className="text-[#ff6600] font-normal normal-case">(obrigatório)</span></Label>
               <div className="space-y-2">
                 {choice("nivel_atv_fisica", "sedentario", "Sedentária", "Fico quase sempre sentado")}
                 {choice("nivel_atv_fisica", "leve", "Levemente ativa", "Caminho um pouco")}
                 {choice("nivel_atv_fisica", "moderado", "Ativa", "Atividade moderada no dia a dia")}
                 {choice("nivel_atv_fisica", "intenso", "Muito ativa", "Trabalho físico ou muito movimento")}
-              </div>
-            </div>
-            <div>
-              <Label>Você trabalha:</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {choice("trabalho_postura", "sentado", "Sentado")}
-                {choice("trabalho_postura", "em_pe", "Em pé")}
-                {choice("trabalho_postura", "misto", "Misto")}
               </div>
             </div>
           </Card>
@@ -483,7 +519,7 @@ export default function Questionario() {
         {step === 5 && (
           <Card>
             <div>
-              <Label>Onde pretende treinar?</Label>
+              <Label>Onde pretende treinar? <span className="text-[#ff6600] font-normal normal-case">(obrigatório)</span></Label>
               <div className="grid grid-cols-3 gap-2">
                 {choice("local_treino", "academia", "Academia")}
                 {choice("local_treino", "casa", "Casa")}
@@ -518,8 +554,36 @@ export default function Questionario() {
                 {check("modalidades", "tenis", "Tênis")}
                 {check("modalidades", "danca", "Dança")}
                 {check("modalidades", "surf", "Surf")}
-                {check("modalidades", "outros", "Outros")}
+                <button
+                  type="button"
+                  onClick={() => toggle("modalidades", "outros")}
+                  className={`p-3 rounded-lg border text-sm text-left transition-colors flex items-center gap-2 ${
+                    (form.modalidades || []).includes("outros")
+                      ? "border-[#ff6600] bg-[#ff6600]/10 text-[#ff6600] font-medium"
+                      : "border-gray-300 bg-gray-50 text-gray-600 hover:border-gray-400"
+                  }`}
+                >
+                  <span className={`w-3.5 h-3.5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                    (form.modalidades || []).includes("outros")
+                      ? "border-[#ff6600] bg-[#ff6600]" : "border-gray-400"
+                  }`}>
+                    {(form.modalidades || []).includes("outros") && (
+                      <span className="text-white text-[9px] leading-none">✓</span>
+                    )}
+                  </span>
+                  Outro
+                </button>
               </div>
+              {(form.modalidades || []).includes("outros") && (
+                <input
+                  type="text"
+                  autoFocus
+                  value={form.modalidade_outra}
+                  onChange={e => sf("modalidade_outra", e.target.value)}
+                  placeholder="Qual modalidade? Ex: Padel, Skate, Escalada..."
+                  className="mt-2 w-full p-3 rounded-lg bg-gray-100 text-gray-900 border border-[#ff6600] focus:outline-none transition-colors"
+                />
+              )}
             </div>
           </Card>
         )}
@@ -530,12 +594,12 @@ export default function Questionario() {
             <Card>
               <Label>Restrições físicas</Label>
               <div className="space-y-3">
-                {yesno("tem_lesao", "Você possui alguma lesão?")}
+                {yesno("tem_lesao", "Você possui alguma lesão? (obrigatório)")}
                 {yesno("dores_frequentes", "Tem dores frequentes?")}
                 {yesno("limitacao_fisica", "Possui alguma limitação física?")}
                 {yesno("exercicio_desconforto", "Algum exercício causa desconforto?")}
                 {yesno("acompanhamento_medico", "Você possui acompanhamento médico?")}
-                {yesno("usa_medicamentos", "Usa medicamentos continuamente?")}
+                {yesno("usa_medicamentos", "Usa medicamentos continuamente? (obrigatório)")}
               </div>
             </Card>
 
@@ -605,98 +669,13 @@ export default function Questionario() {
             </div>
 
             <Card>
-              {textarea("obervacoes", "Observações adicionais (lesões, limitações, medicamentos...)", "Descreva qualquer informação relevante...")}
+              {textarea("obervacoes", "Observações adicionais (lesões, limitações...)", "Descreva qualquer informação relevante...")}
             </Card>
           </div>
         )}
 
-        {/* ── Etapa 7: Alimentação ──────────────────────────────────────── */}
+        {/* ── Etapa 7: Preferências ─────────────────────────────────────── */}
         {step === 7 && (
-          <Card>
-            <div>
-              <Label>Quantas refeições faz por dia?</Label>
-              <div className="grid grid-cols-6 gap-2">
-                {[1, 2, 3, 4, 5, 6].map((n) => (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => sf("refeicoes_dia", n)}
-                    className={`py-2.5 rounded-lg border text-sm font-bold text-center transition-colors ${
-                      form.refeicoes_dia === n
-                        ? "border-[#ff6600] bg-[#ff6600]/10 text-[#ff6600]"
-                        : "border-gray-300 bg-gray-50 text-gray-600 hover:border-gray-400"
-                    }`}
-                  >
-                    {n}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label>Tem alguma restrição alimentar? (pode marcar mais de um)</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {check("restricao_alimentar", "lactose", "Lactose")}
-                {check("restricao_alimentar", "gluten", "Glúten")}
-                {check("restricao_alimentar", "vegetariano", "Vegetariano")}
-                {check("restricao_alimentar", "vegano", "Vegano")}
-                {check("restricao_alimentar", "alergias", "Alergias")}
-              </div>
-            </div>
-            {textarea("alimentos_nao_gosta", "Quais alimentos você não gosta?", "Ex: brócolis, fígado, quiabo...")}
-            {textarea("alimentos_gosta", "Quais alimentos você gosta muito?", "Ex: frango, arroz, ovos, frutas...")}
-            {yesno("dificuldade_dieta", "Tem dificuldade em seguir dieta?")}
-            {yesno("cozinha_refeicoes", "Você cozinha suas refeições?")}
-            {textInput("gasto_alimentacao", "Quanto pretende gastar com alimentação por mês?", "Ex: R$ 500, R$ 1.000...")}
-          </Card>
-        )}
-
-        {/* ── Etapa 8: Hábitos ──────────────────────────────────────────── */}
-        {step === 8 && (
-          <Card>
-            <div>
-              <Label>Quantas horas dorme por noite?</Label>
-              <div className="grid grid-cols-7 gap-1.5">
-                {[4, 5, 6, 7, 8, 9, 10].map((h) => (
-                  <button
-                    key={h}
-                    type="button"
-                    onClick={() => sf("horas_sono", h)}
-                    className={`py-2.5 rounded-lg border text-sm font-bold text-center transition-colors ${
-                      form.horas_sono === h
-                        ? "border-[#ff6600] bg-[#ff6600]/10 text-[#ff6600]"
-                        : "border-gray-300 bg-gray-50 text-gray-600 hover:border-gray-400"
-                    }`}
-                  >
-                    {h}h
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label>Como está seu nível de estresse?</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {choice("nivel_estresse", "baixo", "Baixo")}
-                {choice("nivel_estresse", "moderado", "Moderado")}
-                {choice("nivel_estresse", "alto", "Alto")}
-                {choice("nivel_estresse", "muito_alto", "Muito alto")}
-              </div>
-            </div>
-            {textInput("agua_dia", "Quantidade de água por dia", "Ex: 2 litros, 3 litros...")}
-            <div>
-              <Label>Consome álcool?</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {choice("consome_alcool", "sim", "Sim")}
-                {choice("consome_alcool", "raramente", "Raramente")}
-                {choice("consome_alcool", "nao", "Não")}
-              </div>
-            </div>
-            {yesno("fuma", "Fuma?")}
-            {yesno("faz_cardio", "Faz cardio atualmente?")}
-          </Card>
-        )}
-
-        {/* ── Etapa 9: Preferências ─────────────────────────────────────── */}
-        {step === 9 && (
           <Card>
             <div>
               <Label>Fotos do corpo (opcional — até 3)</Label>

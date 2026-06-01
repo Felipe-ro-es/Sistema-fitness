@@ -55,7 +55,6 @@ export default function Dashboard() {
   const quickLinks = [
     { to: "/questionario", label: "Atualizar perfil físico", icon: "◎", desc: "Edite seus dados para refinar os planos" },
     { to: "/plano-treino", label: "Ver plano de treino", icon: "◈", desc: "Seu programa semanal personalizado" },
-    { to: "/plano-alimentar", label: "Ver plano alimentar", icon: "◉", desc: "Seu cardápio diário balanceado" },
     { to: "/historico", label: "Registrar progresso", icon: "◷", desc: "Adicione peso e medidas de hoje" },
   ];
 
@@ -73,7 +72,7 @@ export default function Dashboard() {
           <div>
             <p className="text-[#ff6600] font-medium">Complete seu perfil físico</p>
             <p className="text-gray-400 text-sm mt-0.5">
-              Preencha o questionário para que a IA gere seus planos personalizados.
+              Preencha o questionário para que seu plano de treino seja gerado.
             </p>
           </div>
           <Link
