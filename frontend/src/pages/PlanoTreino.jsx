@@ -3,6 +3,14 @@ import AppLayout from "../components/AppLayout";
 import { api } from "../services/api";
 import { Link } from "react-router";
 
+function formatObjetivo(v) {
+  try {
+    const arr = v ? JSON.parse(v) : [];
+    if (arr.length > 0) return arr.map(s => s.replace(/_/g, " ")).join(", ");
+  } catch {}
+  return typeof v === "string" ? v.replace(/_/g, " ") : "—";
+}
+
 const DIA_CORES = [
   "border-l-orange-400",
   "border-l-blue-400",
@@ -176,7 +184,7 @@ export default function PlanoTreino() {
   const emRevisao = plano?.status === "revisao";
   const anterior = plano?._anteriorValidado ?? null;
   const planoExibido = emPendente ? anterior : plano;
-  const feedbackId = emPendente && anterior ? anterior.id : plano?.id;
+  const feedbackId = plano?.status === "validado" ? plano.id : (emPendente && anterior ? anterior.id : null);
   const dias = planoExibido ? parseTreino(planoExibido.descricao) : [];
 
   return (
@@ -184,17 +192,17 @@ export default function PlanoTreino() {
       <div className="max-w-3xl mx-auto">
 
         {/* Header */}
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <div>
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
             <h1 className="text-2xl font-bold text-gray-900">Plano de Treino</h1>
             {(planoExibido?.objetivo || plano.objetivo) && (
-              <span className="inline-block mt-2 px-3 py-1 bg-orange-50 border border-orange-200 text-[#ff6600] text-xs font-semibold rounded-full uppercase tracking-wide">
-                {(planoExibido?.objetivo || plano.objetivo).replace(/_/g, " ")}
-              </span>
+              <p className="mt-2 text-xs font-semibold text-[#ff6600] uppercase tracking-wide break-words">
+                {formatObjetivo(planoExibido?.objetivo || plano.objetivo)}
+              </p>
             )}
           </div>
           <button onClick={gerarPlano} disabled={gerando}
-            className="shrink-0 flex items-center gap-2 bg-[#ff6600] px-4 py-2 rounded-lg text-sm font-semibold text-white hover:bg-[#e55a00] transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+            className="shrink-0 self-start flex items-center gap-2 bg-[#ff6600] px-4 py-2 rounded-lg text-sm font-semibold text-white hover:bg-[#e55a00] transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
             {gerando
               ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Gerando...</>
               : "↺ Solicitar novo plano"}

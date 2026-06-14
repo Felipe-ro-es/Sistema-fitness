@@ -3,20 +3,31 @@ import { Link } from "react-router";
 import { personalApi } from "../services/api";
 import { usePersonalAuth } from "../context/PersonalAuthContext";
 
+const PARQ_PERGUNTAS = [
+  "Algum médico já disse que você possui algum problema de coração ou pressão arterial, e que somente deveria realizar atividade física supervisionado por profissionais de saúde?",
+  "Você sente dores no peito quando pratica atividade física?",
+  "No último mês, você sentiu dores no peito ao praticar atividade física?",
+  "Você apresenta algum desequilíbrio devido à tontura e/ou perda momentânea da consciência?",
+  "Você possui algum problema ósseo ou articular, que pode ser afetado ou agravado pela atividade física?",
+  "Você toma atualmente algum tipo de medicação de uso contínuo?",
+  "Você realiza algum tipo de tratamento médico para pressão arterial ou problemas cardíacos?",
+  "Você realiza algum tratamento médico contínuo, que possa ser afetado ou prejudicado com a atividade física?",
+  "Você já se submeteu a algum tipo de cirurgia, que comprometa de alguma forma a atividade física?",
+  "Sabe de alguma outra razão pela qual a atividade física possa eventualmente comprometer sua saúde?",
+];
+
 const SECOES = [
   {
     titulo: "Objetivo",
     campos: [
-      { label: "Objetivo principal", key: "objetivo", fmt: v => v?.replace(/_/g, " ") },
-      { label: "Prazo", key: "prazo_objetivo" },
+      { label: "Objetivo principal", key: "objetivo", fmt: v => parseArr(v).map(o => o.replace(/_/g, " ")).join(", ") || v?.replace(/_/g, " ") },
       { label: "Resultado esperado", key: "resultado_satisfatorio" },
-      { label: "Tentou antes?", key: "tentou_antes" },
     ],
   },
   {
     titulo: "Dados físicos",
     campos: [
-      { label: "Idade", key: "idade", fmt: v => v ? `${v} anos` : null },
+      { label: "Data de nascimento", key: "data_nascimento" },
       { label: "Sexo", key: "sexo" },
       { label: "Altura", key: "altura", fmt: v => v ? `${v} cm` : null },
       { label: "Peso atual", key: "peso", fmt: v => v ? `${v} kg` : null },
@@ -26,11 +37,9 @@ const SECOES = [
     ],
   },
   {
-    titulo: "Experiência",
+    titulo: "Nível de experiência",
     campos: [
-      { label: "Nível musculação", key: "nivel_musculacao" },
-      { label: "Tempo treinando", key: "tempo_treino" },
-      { label: "Seguiu dieta antes?", key: "seguiu_dieta" },
+      { label: "Nível de atividade física", key: "nivel_musculacao" },
       { label: "Executa básicos?", key: "sabe_executar_basicos" },
     ],
   },
@@ -39,47 +48,30 @@ const SECOES = [
     campos: [
       { label: "Dias disponíveis", key: "dias_disponiveis", fmt: v => parseArr(v).join(", ") },
       { label: "Tempo por treino", key: "tempo_por_treino" },
-      { label: "Período preferido", key: "periodo_treino" },
-      { label: "Nível de atividade", key: "nivel_atv_fisica" },
-      { label: "Postura no trabalho", key: "trabalho_postura" },
+      { label: "Nível de atividade diária", key: "nivel_atv_fisica" },
     ],
   },
   {
-    titulo: "Estrutura",
+    titulo: "Estrutura disponível",
     campos: [
-      { label: "Local de treino", key: "local_treino" },
+      { label: "Local de treino", key: "local_treino", fmt: v => parseArr(v).join(", ") },
       { label: "Equipamentos", key: "equipamentos" },
-      { label: "Academia completa?", key: "academia_completa" },
       { label: "Preferência de treino", key: "preferencia_treino", fmt: v => parseArr(v).join(", ") },
       { label: "Modalidades", key: "modalidades", fmt: v => parseArr(v).join(", ") },
     ],
   },
   {
-    titulo: "Saúde e restrições",
+    titulo: "Preferências de treino",
     campos: [
-      { label: "Possui lesão?", key: "tem_lesao" },
-      { label: "Dores frequentes?", key: "dores_frequentes" },
-      { label: "Limitação física?", key: "limitacao_fisica" },
-      { label: "Desconforto em exercício?", key: "exercicio_desconforto" },
-      { label: "Acompanhamento médico?", key: "acompanhamento_medico" },
-      { label: "Usa medicamentos?", key: "usa_medicamentos" },
-      { label: "Horas de sono", key: "horas_sono", fmt: v => v ? `${v}h` : null },
-      { label: "Nível de estresse", key: "nivel_estresse" },
-      { label: "Água por dia", key: "agua_dia" },
-      { label: "Consome álcool?", key: "consome_alcool" },
-      { label: "Fuma?", key: "fuma" },
-      { label: "Faz cardio?", key: "faz_cardio" },
-      { label: "Observações", key: "obervacoes" },
+      { label: "Tipo de treino", key: "treino_dividido" },
+      { label: "Exercícios favoritos", key: "exercicios_favoritos" },
+      { label: "Exercícios que não gosta", key: "exercicios_odeia" },
     ],
   },
   {
-    titulo: "Preferências de treino",
+    titulo: "Observações",
     campos: [
-      { label: "Duração preferida", key: "preferencia_duracao_treino" },
-      { label: "Gosta de cardio?", key: "gosta_cardio" },
-      { label: "Tipo de treino", key: "treino_dividido" },
-      { label: "Exercícios favoritos", key: "exercicios_favoritos" },
-      { label: "Exercícios que odeia", key: "exercicios_odeia" },
+      { label: "Observações adicionais", key: "obervacoes" },
     ],
   },
 ];
@@ -103,10 +95,11 @@ function flatten(perfil) {
 
 function Campo({ label, valor }) {
   if (!valor && valor !== 0) return null;
+  const isLongo = String(valor).length > 40;
   return (
-    <div className="flex gap-2 text-sm">
-      <span className="text-gray-400 shrink-0 w-44">{label}:</span>
-      <span className="text-gray-800 font-medium capitalize">{String(valor)}</span>
+    <div className={`text-sm ${isLongo ? "flex flex-col gap-0.5" : "flex gap-2"}`}>
+      <span className="text-gray-400 shrink-0">{label}:</span>
+      <span className="text-gray-800 font-medium break-words min-w-0">{String(valor)}</span>
     </div>
   );
 }
@@ -114,6 +107,7 @@ function Campo({ label, valor }) {
 export default function PersonalUsuarios() {
   const { personal } = usePersonalAuth();
   const [usuarios, setUsuarios] = useState([]);
+  const [busca, setBusca] = useState("");
   const [loading, setLoading] = useState(true);
   const [aberto, setAberto] = useState(null);
 
@@ -138,10 +132,17 @@ export default function PersonalUsuarios() {
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-bold text-gray-900">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+          <h1 className="text-xl font-bold text-gray-900 shrink-0">
             Todos os usuários <span className="text-gray-400 font-normal text-base">({usuarios.length})</span>
           </h1>
+          <input
+            type="text"
+            placeholder="Buscar por nome ou e-mail..."
+            value={busca}
+            onChange={e => setBusca(e.target.value)}
+            className="w-full sm:max-w-xs border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-[#ff6600]"
+          />
         </div>
 
         {loading ? (
@@ -154,36 +155,44 @@ export default function PersonalUsuarios() {
           </div>
         ) : (
           <div className="space-y-3">
-            {usuarios.map(perfil => {
+            {usuarios.filter(perfil => {
+              const nome = perfil.Usuario?.nome?.toLowerCase() ?? "";
+              const email = perfil.Usuario?.email?.toLowerCase() ?? "";
+              const q = busca.toLowerCase();
+              return nome.includes(q) || email.includes(q);
+            }).map(perfil => {
               const usuario = perfil.Usuario;
               const dados = flatten(perfil);
               const isAberto = aberto === perfil.id;
               const meuAluno = perfil.personalId === personal?.id;
+              const objetivo = (() => {
+                const arr = parseArr(dados.objetivo);
+                if (arr.length > 0) return arr.map(o => o.replace(/_/g, " ")).join(", ");
+                return dados.objetivo?.replace(/_/g, " ") ?? null;
+              })();
 
               return (
                 <div key={perfil.id} className={`bg-white rounded-xl overflow-hidden border ${meuAluno ? "border-[#ff6600]/30" : "border-gray-200"}`}>
                   {/* Cabeçalho do card */}
                   <button
                     onClick={() => setAberto(isAberto ? null : perfil.id)}
-                    className="w-full flex items-center justify-between gap-4 p-5 hover:bg-gray-50 transition-colors text-left"
+                    className="w-full flex items-start justify-between gap-4 p-5 hover:bg-gray-50 transition-colors text-left"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${meuAluno ? "bg-[#ff6600] text-white" : "bg-[#ff6600]/10 text-[#ff6600]"}`}>
+                    <div className="flex items-start gap-4 min-w-0 flex-1">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shrink-0 ${meuAluno ? "bg-[#ff6600] text-white" : "bg-[#ff6600]/10 text-[#ff6600]"}`}>
                         {usuario?.nome?.[0]?.toUpperCase() ?? "U"}
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{usuario?.nome ?? "—"}</p>
-                        <p className="text-xs text-gray-400">{usuario?.email}</p>
+                      <div className="min-w-0">
+                        <p className="font-medium text-gray-900 break-words">{usuario?.nome ?? "—"}</p>
+                        <p className="text-xs text-gray-400 break-words">{usuario?.email}</p>
+                        {objetivo && (
+                          <p className="text-xs text-[#ff6600] mt-0.5 break-words">{objetivo}</p>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      {dados.objetivo && (
-                        <span className="text-xs bg-orange-50 border border-orange-100 text-[#ff6600] px-2.5 py-1 rounded-full font-medium capitalize">
-                          {dados.objetivo.replace(/_/g, " ")}
-                        </span>
-                      )}
+                    <div className="flex items-center gap-2 shrink-0">
                       {dados.peso && (
-                        <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
+                        <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full whitespace-nowrap">
                           {dados.peso} kg
                         </span>
                       )}
@@ -219,6 +228,62 @@ export default function PersonalUsuarios() {
                         })}
                       </div>
 
+                      {/* Restrições físicas detalhadas */}
+                      {perfil.SaudeRestricao && (
+                        <div className="mt-6 border-t border-gray-100 pt-5">
+                          <p className="text-xs font-bold text-[#ff6600] uppercase tracking-wider mb-3">Restrições físicas</p>
+                          <div className="space-y-2">
+                            {[
+                              { label: "Possui lesão?", key: "tem_lesao", desc: "tem_lesao_desc" },
+                              { label: "Dores frequentes?", key: "dores_frequentes", desc: "dores_frequentes_desc" },
+                              { label: "Limitação física?", key: "limitacao_fisica", desc: "limitacao_fisica_desc" },
+                              { label: "Desconforto em exercício?", key: "exercicio_desconforto", desc: "exercicio_desconforto_desc" },
+                            ].map(({ label, key, desc }) => {
+                              const valor = dados[key];
+                              const descricao = dados[desc];
+                              if (!valor) return null;
+                              const isSim = valor === "sim";
+                              return (
+                                <div key={key} className={`rounded-lg px-3 py-2 border text-sm ${isSim ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
+                                  <div className="flex items-center gap-2">
+                                    <span className={`font-bold text-xs ${isSim ? "text-red-500" : "text-gray-400"}`}>{isSim ? "SIM" : "NÃO"}</span>
+                                    <span className="text-gray-600">{label}</span>
+                                  </div>
+                                  {isSim && descricao && (
+                                    <p className="text-gray-700 mt-1 text-xs italic break-words whitespace-pre-wrap">"{descricao}"</p>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* PAR-Q */}
+                      {perfil.SaudeRestricao?.parq && (() => {
+                        let respostas = [];
+                        try { respostas = JSON.parse(perfil.SaudeRestricao.parq); } catch {}
+                        if (!respostas.length) return null;
+                        return (
+                          <div className="mt-6 border-t border-gray-100 pt-5">
+                            <p className="text-xs font-bold text-[#ff6600] uppercase tracking-wider mb-3">Questionário PAR-Q</p>
+                            <div className="space-y-2">
+                              {PARQ_PERGUNTAS.map((pergunta, i) => {
+                                const isSim = respostas[i] === true;
+                                return (
+                                  <div key={i} className={`rounded-lg px-3 py-2 border text-sm ${isSim ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"}`}>
+                                    <div className="flex gap-2">
+                                      <span className={`font-bold text-xs shrink-0 mt-0.5 ${isSim ? "text-red-500" : "text-gray-400"}`}>{isSim ? "SIM" : "NÃO"}</span>
+                                      <span className={`text-xs ${isSim ? "text-red-700 font-medium" : "text-gray-500"}`}>{i + 1}. {pergunta}</span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })()}
+
                       {/* Histórico de progresso */}
                       {perfil.historico_progressos?.length > 0 && (
                         <div className="mt-6 border-t border-gray-100 pt-5">
@@ -226,7 +291,13 @@ export default function PersonalUsuarios() {
                             Histórico de progresso ({perfil.historico_progressos.length} registros)
                           </p>
                           <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
+                            <table className="w-full text-sm table-fixed">
+                              <colgroup>
+                                <col className="w-24" />
+                                <col className="w-20" />
+                                <col />
+                                <col className="w-28" />
+                              </colgroup>
                               <thead>
                                 <tr className="text-xs text-gray-400 border-b border-gray-100">
                                   <th className="text-left pb-2 font-medium">Data</th>
@@ -237,14 +308,14 @@ export default function PersonalUsuarios() {
                               </thead>
                               <tbody className="divide-y divide-gray-50">
                                 {perfil.historico_progressos.map(h => (
-                                  <tr key={h.id} className="py-2">
+                                  <tr key={h.id} className="align-top">
                                     <td className="py-2 text-gray-600 whitespace-nowrap pr-4">
                                       {h.data ? new Date(h.data).toLocaleDateString("pt-BR") : "—"}
                                     </td>
                                     <td className="py-2 font-semibold text-gray-900 pr-4">
                                       {h.peso ? `${h.peso} kg` : "—"}
                                     </td>
-                                    <td className="py-2 text-gray-500 pr-4">
+                                    <td className="py-2 text-gray-500 pr-4 break-words">
                                       {h.obervacoes || "—"}
                                     </td>
                                     <td className="py-2">

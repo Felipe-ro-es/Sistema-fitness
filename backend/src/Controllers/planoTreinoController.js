@@ -11,11 +11,16 @@ function getOpenAI() {
 }
 
 const PARQ_PERGUNTAS = [
-  'Algum médico já disse que você possui problema cardíaco',
-  'Você sente dor no peito durante atividade física',
-  'Já perdeu equilíbrio ou consciência durante exercícios',
-  'Possui problema ósseo ou articular',
-  'Usa medicamentos para pressão ou coração',
+  'Algum médico já disse que você possui algum problema de coração ou pressão arterial, e que somente deveria realizar atividade física supervisionado por profissionais de saúde',
+  'Você sente dores no peito quando pratica atividade física',
+  'No último mês, você sentiu dores no peito ao praticar atividade física',
+  'Você apresenta algum desequilíbrio devido à tontura e/ou perda momentânea da consciência',
+  'Você possui algum problema ósseo ou articular, que pode ser afetado ou agravado pela atividade física',
+  'Você toma atualmente algum tipo de medicação de uso contínuo',
+  'Você realiza algum tipo de tratamento médico para pressão arterial ou problemas cardíacos',
+  'Você realiza algum tratamento médico contínuo, que possa ser afetado ou prejudicado com a atividade física',
+  'Você já se submeteu a algum tipo de cirurgia, que comprometa de alguma forma a atividade física',
+  'Sabe de alguma outra razão pela qual a atividade física possa eventualmente comprometer sua saúde',
 ];
 
 function buildParqAlerta(parqJson) {

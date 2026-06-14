@@ -14,22 +14,27 @@ const STEPS = [
 ];
 
 const PARQ_PERGUNTAS = [
-  "Algum médico já disse que você possui problema cardíaco?",
-  "Você sente dor no peito durante atividade física?",
-  "Já perdeu equilíbrio ou consciência durante exercícios?",
-  "Possui problema ósseo ou articular?",
-  "Usa medicamentos para pressão ou coração?",
+  "Algum médico já disse que você possui algum problema de coração ou pressão arterial, e que somente deveria realizar atividade física supervisionado por profissionais de saúde?",
+  "Você sente dores no peito quando pratica atividade física?",
+  "No último mês, você sentiu dores no peito ao praticar atividade física?",
+  "Você apresenta algum desequilíbrio devido à tontura e/ou perda momentânea da consciência?",
+  "Você possui algum problema ósseo ou articular, que pode ser afetado ou agravado pela atividade física?",
+  "Você toma atualmente algum tipo de medicação de uso contínuo?",
+  "Você realiza algum tipo de tratamento médico para pressão arterial ou problemas cardíacos?",
+  "Você realiza algum tratamento médico contínuo, que possa ser afetado ou prejudicado com a atividade física?",
+  "Você já se submeteu a algum tipo de cirurgia, que comprometa de alguma forma a atividade física?",
+  "Sabe de alguma outra razão pela qual a atividade física possa eventualmente comprometer sua saúde?",
 ];
 
 const INIT = {
-  objetivo: "", resultado_satisfatorio: "",
+  objetivo: [], objetivo_outro: "", resultado_satisfatorio: "",
   data_nascimento: "", sexo: "", altura: "", peso: "", peso_desejado: "", percentual_gordura: "", medidas_corporais: "",
-  nivel_musculacao: "", tempo_treino: "", sabe_executar_basicos: "",
-  dias_disponiveis: [], tempo_por_treino: "", periodo_treino: "", nivel_atv_fisica: "",
-  local_treino: "", equipamentos: "", academia_completa: "", preferencia_treino: [], modalidades: [],
-  tem_lesao: "", dores_frequentes: "", limitacao_fisica: "", exercicio_desconforto: "",
-  acompanhamento_medico: "", usa_medicamentos: "", obervacoes: "",
-  preferencia_duracao_treino: "", gosta_cardio: "", treino_dividido: "",
+  nivel_musculacao: "", sabe_executar_basicos: "",
+  dias_disponiveis: [], tempo_por_treino: "", nivel_atv_fisica: "",
+  local_treino: [], local_treino_outro: "", preferencia_treino: [], preferencia_treino_outro: "", modalidades: [],
+  tem_lesao: "", tem_lesao_desc: "", dores_frequentes: "", dores_frequentes_desc: "", limitacao_fisica: "", limitacao_fisica_desc: "", exercicio_desconforto: "", exercicio_desconforto_desc: "",
+  obervacoes: "",
+  treino_dividido: "",
   exercicios_favoritos: "", exercicios_odeia: "",
   modalidade_outra: "",
 };
@@ -50,7 +55,7 @@ export default function Questionario() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState(INIT);
-  const [parq, setParq] = useState(Array(5).fill(false));
+  const [parq, setParq] = useState(Array(10).fill(false));
   const [fotos, setFotos] = useState([]);
   const [fotoPreviews, setFotoPreviews] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -63,25 +68,24 @@ export default function Questionario() {
       const safe = (v) => v ?? "";
       const arr = (v) => { try { return v ? JSON.parse(v) : []; } catch { return []; } };
       setForm({
-        objetivo: safe(data.objetivo),
+        objetivo: arr(data.objetivo), objetivo_outro: "",
         resultado_satisfatorio: safe(data.resultado_satisfatorio),
         data_nascimento: safe(data.data_nascimento), sexo: safe(data.sexo), altura: safe(data.altura),
         peso: safe(data.peso), peso_desejado: safe(data.peso_desejado),
         percentual_gordura: safe(data.percentual_gordura), medidas_corporais: safe(data.medidas_corporais),
-        nivel_musculacao: safe(data.nivel_musculacao), tempo_treino: safe(data.tempo_treino),
+        nivel_musculacao: safe(data.nivel_musculacao),
         sabe_executar_basicos: safe(data.sabe_executar_basicos),
         dias_disponiveis: arr(data.dias_disponiveis), tempo_por_treino: safe(data.tempo_por_treino),
-        periodo_treino: safe(data.periodo_treino), nivel_atv_fisica: safe(data.nivel_atv_fisica),
-        local_treino: safe(data.local_treino),
-        equipamentos: safe(data.equipamentos), academia_completa: safe(data.academia_completa),
-        preferencia_treino: arr(data.preferencia_treino),
+        nivel_atv_fisica: safe(data.nivel_atv_fisica),
+        local_treino: arr(data.local_treino), local_treino_outro: "",
+        preferencia_treino: arr(data.preferencia_treino), preferencia_treino_outro: "",
         modalidades: arr(data.modalidades),
-        tem_lesao: safe(data.tem_lesao), dores_frequentes: safe(data.dores_frequentes),
-        limitacao_fisica: safe(data.limitacao_fisica), exercicio_desconforto: safe(data.exercicio_desconforto),
-        acompanhamento_medico: safe(data.acompanhamento_medico), usa_medicamentos: safe(data.usa_medicamentos),
+        tem_lesao: safe(data.tem_lesao), tem_lesao_desc: safe(data.tem_lesao_desc),
+        dores_frequentes: safe(data.dores_frequentes), dores_frequentes_desc: safe(data.dores_frequentes_desc),
+        limitacao_fisica: safe(data.limitacao_fisica), limitacao_fisica_desc: safe(data.limitacao_fisica_desc),
+        exercicio_desconforto: safe(data.exercicio_desconforto), exercicio_desconforto_desc: safe(data.exercicio_desconforto_desc),
         obervacoes: safe(data.obervacoes),
-        preferencia_duracao_treino: safe(data.preferencia_duracao_treino),
-        gosta_cardio: safe(data.gosta_cardio), treino_dividido: safe(data.treino_dividido),
+        treino_dividido: safe(data.treino_dividido),
         exercicios_favoritos: safe(data.exercicios_favoritos), exercicios_odeia: safe(data.exercicios_odeia),
         modalidade_outra: safe(data.modalidade_outra),
       });
@@ -99,12 +103,18 @@ export default function Questionario() {
 
   const canProceed = () => {
     switch (step) {
-      case 1: return !!form.objetivo;
+      case 1: return form.objetivo.length > 0;
       case 2: return !!(form.data_nascimento && form.altura && form.peso);
       case 3: return !!form.nivel_musculacao;
       case 4: return !!(form.dias_disponiveis.length > 0 && form.nivel_atv_fisica);
-      case 5: return !!form.local_treino;
-      case 6: return !!(form.tem_lesao && form.usa_medicamentos);
+      case 5: return form.local_treino.length > 0;
+      case 6: return !!(
+        form.tem_lesao &&
+        (form.tem_lesao === 'nao' || form.tem_lesao_desc.trim()) &&
+        (form.dores_frequentes === 'nao' || !form.dores_frequentes || form.dores_frequentes_desc.trim()) &&
+        (form.limitacao_fisica === 'nao' || !form.limitacao_fisica || form.limitacao_fisica_desc.trim()) &&
+        (form.exercicio_desconforto === 'nao' || !form.exercicio_desconforto || form.exercicio_desconforto_desc.trim())
+      );
       default: return true;
     }
   };
@@ -129,15 +139,26 @@ export default function Questionario() {
       const idade = form.data_nascimento
         ? Math.floor((Date.now() - new Date(form.data_nascimento)) / (365.25 * 24 * 3600 * 1000))
         : "";
+      const objetivoFinais = form.objetivo.map(o =>
+        o === "outros" && form.objetivo_outro.trim() ? form.objetivo_outro.trim() : o
+      );
       const modalidadesFinais = form.modalidades.map(m =>
         m === "outros" && form.modalidade_outra.trim() ? form.modalidade_outra.trim() : m
+      );
+      const prefTreinoFinais = form.preferencia_treino.map(p =>
+        p === "outros" && form.preferencia_treino_outro.trim() ? form.preferencia_treino_outro.trim() : p
+      );
+      const localTreinoFinais = form.local_treino.map(l =>
+        l === "outros" && form.local_treino_outro.trim() ? form.local_treino_outro.trim() : l
       );
       const campos = {
         ...form,
         idade,
-        preferencia_treino: JSON.stringify(form.preferencia_treino),
+        objetivo: JSON.stringify(objetivoFinais),
+        preferencia_treino: JSON.stringify(prefTreinoFinais),
         modalidades: JSON.stringify(modalidadesFinais),
         dias_disponiveis: JSON.stringify(form.dias_disponiveis),
+        local_treino: JSON.stringify(localTreinoFinais),
         parq: JSON.stringify(parq),
       };
       Object.entries(campos).forEach(([k, v]) => fd.append(k, v));
@@ -325,16 +346,26 @@ export default function Questionario() {
         {step === 1 && (
           <div className="space-y-4">
             <Card>
-              <Label>Qual é seu principal objetivo? <span className="text-[#ff6600] font-normal normal-case">(obrigatório)</span></Label>
+              <Label>Qual é seu principal objetivo? <span className="text-[#ff6600] font-normal normal-case">(obrigatório, pode marcar mais de um)</span></Label>
               <div className="space-y-2">
-                {choice("objetivo", "emagrecimento", "Emagrecimento")}
-                {choice("objetivo", "ganho_de_massa", "Ganho de massa muscular")}
-                {choice("objetivo", "definicao", "Definição muscular")}
-                {choice("objetivo", "condicionamento", "Melhorar condicionamento")}
-                {choice("objetivo", "saude", "Saúde e qualidade de vida")}
-                {choice("objetivo", "forca", "Ganho de força")}
-                {choice("objetivo", "performance", "Performance esportiva")}
+                {check("objetivo", "emagrecimento", "Emagrecimento")}
+                {check("objetivo", "ganho_de_massa", "Ganho de massa muscular")}
+                {check("objetivo", "definicao", "Definição muscular")}
+                {check("objetivo", "condicionamento", "Melhorar condicionamento")}
+                {check("objetivo", "saude", "Saúde e qualidade de vida")}
+                {check("objetivo", "forca", "Ganho de força")}
+                {check("objetivo", "performance", "Performance esportiva")}
+                {check("objetivo", "outros", "Outros")}
               </div>
+              {form.objetivo.includes("outros") && (
+                <input
+                  type="text"
+                  placeholder="Especifique seu objetivo..."
+                  value={form.objetivo_outro}
+                  onChange={e => sf("objetivo_outro", e.target.value)}
+                  className="mt-2 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-[#ff6600]"
+                />
+              )}
             </Card>
             <Card>
               {textarea("resultado_satisfatorio", "Qual seria um resultado satisfatório para você?", "Descreva como seria o resultado ideal...")}
@@ -418,23 +449,12 @@ export default function Questionario() {
         {step === 3 && (
           <Card>
             <div>
-              <Label>Qual seu nível na musculação? <span className="text-[#ff6600] font-normal normal-case">(obrigatório)</span></Label>
+              <Label>Qual seu nível de atividade física? <span className="text-[#ff6600] font-normal normal-case">(obrigatório)</span></Label>
               <div className="space-y-2">
-                {choice("nivel_musculacao", "iniciante", "Iniciante", "Menos de 1 ano")}
-                {choice("nivel_musculacao", "intermediario", "Intermediário", "1 a 3 anos")}
-                {choice("nivel_musculacao", "avancado", "Avançado", "Mais de 3 anos")}
+                {choice("nivel_musculacao", "iniciante", "Iniciante", "Pouco ou nenhum exercício")}
+                {choice("nivel_musculacao", "intermediario", "Intermediário", "Exercita-se regularmente")}
+                {choice("nivel_musculacao", "avancado", "Avançado", "Treina com alta frequência e intensidade")}
               </div>
-            </div>
-            <div>
-              <Label>Há quanto tempo você treina?</Label>
-              {gridBtn("tempo_treino", [
-                ["nunca", "Nunca treinei"],
-                ["menos_6m", "Menos de 6 meses"],
-                ["6m_1a", "6 meses a 1 ano"],
-                ["1a_3a", "1 a 3 anos"],
-                ["3a_5a", "3 a 5 anos"],
-                ["mais_5a", "Mais de 5 anos"],
-              ])}
             </div>
             {yesno("sabe_executar_basicos", "Você sabe executar exercícios básicos? (agachamento, supino, etc.)")}
           </Card>
@@ -496,14 +516,6 @@ export default function Questionario() {
               ])}
             </div>
             <div>
-              <Label>Qual período prefere treinar?</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {choice("periodo_treino", "manha", "Manhã")}
-                {choice("periodo_treino", "tarde", "Tarde")}
-                {choice("periodo_treino", "noite", "Noite")}
-              </div>
-            </div>
-            <div>
               <Label>Sua rotina é: <span className="text-[#ff6600] font-normal normal-case">(obrigatório)</span></Label>
               <div className="space-y-2">
                 {choice("nivel_atv_fisica", "sedentario", "Sedentária", "Fico quase sempre sentado")}
@@ -519,15 +531,23 @@ export default function Questionario() {
         {step === 5 && (
           <Card>
             <div>
-              <Label>Onde pretende treinar? <span className="text-[#ff6600] font-normal normal-case">(obrigatório)</span></Label>
+              <Label>Onde pretende treinar? <span className="text-[#ff6600] font-normal normal-case">(obrigatório, pode marcar mais de um)</span></Label>
               <div className="grid grid-cols-3 gap-2">
-                {choice("local_treino", "academia", "Academia")}
-                {choice("local_treino", "casa", "Casa")}
-                {choice("local_treino", "ar_livre", "Ar livre")}
+                {check("local_treino", "academia", "Academia")}
+                {check("local_treino", "casa", "Casa")}
+                {check("local_treino", "ar_livre", "Ar livre")}
+                {check("local_treino", "outros", "Outros")}
               </div>
+              {form.local_treino.includes("outros") && (
+                <input
+                  type="text"
+                  placeholder="Especifique onde você treina..."
+                  value={form.local_treino_outro}
+                  onChange={e => sf("local_treino_outro", e.target.value)}
+                  className="mt-2 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-[#ff6600]"
+                />
+              )}
             </div>
-            {textarea("equipamentos", "Quais equipamentos você possui?", "Ex: halteres, barra, elástico, esteira...")}
-            {yesno("academia_completa", "Sua academia possui aparelhos completos?")}
             <div>
               <Label>Você prefere: (pode marcar mais de um)</Label>
               <div className="grid grid-cols-2 gap-2">
@@ -536,7 +556,17 @@ export default function Questionario() {
                 {check("preferencia_treino", "funcional", "Funcional")}
                 {check("preferencia_treino", "cardio", "Cardio")}
                 {check("preferencia_treino", "calistenia", "Calistenia")}
+                {check("preferencia_treino", "outros", "Outros")}
               </div>
+              {form.preferencia_treino.includes("outros") && (
+                <input
+                  type="text"
+                  placeholder="Especifique sua preferência..."
+                  value={form.preferencia_treino_outro}
+                  onChange={e => sf("preferencia_treino_outro", e.target.value)}
+                  className="mt-2 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-[#ff6600]"
+                />
+              )}
             </div>
             <div>
               <Label>Quais modalidades esportivas você gosta ou pratica? (pode marcar mais de um)</Label>
@@ -595,11 +625,41 @@ export default function Questionario() {
               <Label>Restrições físicas</Label>
               <div className="space-y-3">
                 {yesno("tem_lesao", "Você possui alguma lesão? (obrigatório)")}
+                {form.tem_lesao === "sim" && (
+                  <div>
+                    <p className="text-xs text-[#ff6600] font-semibold mb-1">Descrição obrigatória <span className="text-red-500">*</span></p>
+                    <input type="text" placeholder="Descreva a lesão..." value={form.tem_lesao_desc}
+                      onChange={e => sf("tem_lesao_desc", e.target.value)}
+                      className="w-full border border-[#ff6600] rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-[#ff6600]" />
+                  </div>
+                )}
                 {yesno("dores_frequentes", "Tem dores frequentes?")}
+                {form.dores_frequentes === "sim" && (
+                  <div>
+                    <p className="text-xs text-[#ff6600] font-semibold mb-1">Descrição obrigatória <span className="text-red-500">*</span></p>
+                    <input type="text" placeholder="Descreva as dores..." value={form.dores_frequentes_desc}
+                      onChange={e => sf("dores_frequentes_desc", e.target.value)}
+                      className="w-full border border-[#ff6600] rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-[#ff6600]" />
+                  </div>
+                )}
                 {yesno("limitacao_fisica", "Possui alguma limitação física?")}
+                {form.limitacao_fisica === "sim" && (
+                  <div>
+                    <p className="text-xs text-[#ff6600] font-semibold mb-1">Descrição obrigatória <span className="text-red-500">*</span></p>
+                    <input type="text" placeholder="Descreva a limitação..." value={form.limitacao_fisica_desc}
+                      onChange={e => sf("limitacao_fisica_desc", e.target.value)}
+                      className="w-full border border-[#ff6600] rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-[#ff6600]" />
+                  </div>
+                )}
                 {yesno("exercicio_desconforto", "Algum exercício causa desconforto?")}
-                {yesno("acompanhamento_medico", "Você possui acompanhamento médico?")}
-                {yesno("usa_medicamentos", "Usa medicamentos continuamente? (obrigatório)")}
+                {form.exercicio_desconforto === "sim" && (
+                  <div>
+                    <p className="text-xs text-[#ff6600] font-semibold mb-1">Descrição obrigatória <span className="text-red-500">*</span></p>
+                    <input type="text" placeholder="Descreva o exercício e o desconforto..." value={form.exercicio_desconforto_desc}
+                      onChange={e => sf("exercicio_desconforto_desc", e.target.value)}
+                      className="w-full border border-[#ff6600] rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-[#ff6600]" />
+                  </div>
+                )}
               </div>
             </Card>
 
@@ -669,7 +729,7 @@ export default function Questionario() {
             </div>
 
             <Card>
-              {textarea("obervacoes", "Observações adicionais (lesões, limitações...)", "Descreva qualquer informação relevante...")}
+              {textarea("obervacoes", "Observações adicionais", "")}
             </Card>
           </div>
         )}
@@ -678,17 +738,19 @@ export default function Questionario() {
         {step === 7 && (
           <Card>
             <div>
-              <Label>Fotos do corpo (opcional — até 3)</Label>
-              <p className="text-xs text-gray-400 mb-3">Adicione fotos para acompanhar sua evolução visual.</p>
+              <Label>Fotos do corpo (opcional)</Label>
+              <p className="text-xs text-gray-400 mb-1">Envie até 3 fotos para acompanhar sua evolução visual.</p>
+              <p className="text-xs text-gray-400 mb-3">📸 <strong>Frente</strong> · <strong>Costas</strong> · <strong>Lado</strong></p>
               {fotoPreviews.length > 0 && (
                 <div className="grid grid-cols-3 gap-2 mb-2">
                   {fotoPreviews.map((src, i) => (
                     <div key={i} className="relative">
+                      <p className="text-[10px] text-center text-gray-400 mb-1">{["Frente", "Costas", "Lado"][i]}</p>
                       <img src={src} alt={`preview ${i + 1}`} className="w-full h-24 object-contain rounded-lg bg-gray-50 border border-gray-200" />
                       <button
                         type="button"
                         onClick={() => removerFoto(i)}
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs leading-none"
+                        className="absolute top-5 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs leading-none"
                       >
                         ×
                       </button>
@@ -702,20 +764,12 @@ export default function Questionario() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
                     </svg>
-                    <span className="text-sm">Adicionar foto ({fotos.length}/3)</span>
+                    <span className="text-sm">Adicionar foto {["(Frente)", "(Costas)", "(Lado)"][fotos.length]}</span>
                   </div>
                   <input type="file" accept="image/*" className="hidden" onChange={handleFotos} />
                 </label>
               )}
             </div>
-            <div>
-              <Label>Você prefere treinos:</Label>
-              <div className="space-y-2">
-                {choice("preferencia_duracao_treino", "curto_intenso", "Curtos e intensos", "Alta intensidade em menos tempo")}
-                {choice("preferencia_duracao_treino", "longo_moderado", "Longos e moderados", "Ritmo constante e sustentável")}
-              </div>
-            </div>
-            {yesno("gosta_cardio", "Gosta de cardio?")}
             <div>
               <Label>Prefere treino:</Label>
               <div className="space-y-2">
@@ -724,7 +778,7 @@ export default function Questionario() {
               </div>
             </div>
             {textarea("exercicios_favoritos", "Tem exercícios favoritos?", "Ex: agachamento, supino reto, pull-up...")}
-            {textarea("exercicios_odeia", "Tem exercícios que odeia?", "Ex: leg press, abdominal, corrida...")}
+            {textarea("exercicios_odeia", "Tem exercícios que você não gosta?", "Ex: leg press, abdominal, corrida...")}
           </Card>
         )}
 

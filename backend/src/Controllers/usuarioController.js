@@ -21,7 +21,10 @@ const PREF_TREINO_FIELDS = [
 ];
 
 const SAUDE_FIELDS = [
-  'tem_lesao', 'dores_frequentes', 'limitacao_fisica', 'exercicio_desconforto',
+  'tem_lesao', 'tem_lesao_desc',
+  'dores_frequentes', 'dores_frequentes_desc',
+  'limitacao_fisica', 'limitacao_fisica_desc',
+  'exercicio_desconforto', 'exercicio_desconforto_desc',
   'acompanhamento_medico', 'usa_medicamentos', 'parq',
 ];
 

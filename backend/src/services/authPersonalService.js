@@ -6,6 +6,8 @@ const { generateToken } = require('../utils/token');
 const register = async ({ nome, email, senha, cref }) => {
   const existing = await PersonalTrainer.findOne({ where: { email } });
   if (existing) throw new Error('Email já cadastrado');
+  const existingCref = await PersonalTrainer.findOne({ where: { cref } });
+  if (existingCref) throw new Error('CREF já cadastrado');
   const hash = await bcrypt.hash(senha, 10);
   const pt = await PersonalTrainer.create({ nome, email, senha: hash, cref });
   const token = generateToken({ id: pt.id, email: pt.email, role: 'personal' });

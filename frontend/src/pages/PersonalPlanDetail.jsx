@@ -12,6 +12,14 @@ const DIA_BADGES = [
   "bg-gray-100 text-gray-500",
 ];
 
+function formatObjetivo(v) {
+  try {
+    const arr = v ? JSON.parse(v) : [];
+    if (arr.length > 0) return arr.map(s => s.replace(/_/g, " ")).join(", ");
+  } catch {}
+  return typeof v === "string" ? v.replace(/_/g, " ") : "—";
+}
+
 // ── parsers ──────────────────────────────────────────────────────────────────
 
 function limparMd(texto) {
@@ -321,20 +329,18 @@ export default function PersonalPlanDetail() {
       <main className="max-w-4xl mx-auto px-6 py-8">
         {/* Info do usuário */}
         {usuario && (
-          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-[#ff6600]/10 flex items-center justify-center font-bold text-[#ff6600] text-lg">
+          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-6 flex items-start gap-4">
+            <div className="w-12 h-12 rounded-full bg-[#ff6600]/10 flex items-center justify-center font-bold text-[#ff6600] text-lg shrink-0">
               {usuario.nome?.[0]?.toUpperCase() ?? "U"}
             </div>
-            <div>
-              <p className="font-semibold text-gray-900">{usuario.nome}</p>
-              <p className="text-sm text-gray-400">{usuario.email}</p>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-gray-900 break-words">{usuario.nome}</p>
+              <p className="text-sm text-gray-400 break-words">{usuario.email}</p>
+              {plano?.objetivo && (
+                <p className="text-xs text-[#ff6600] mt-1 break-words">{formatObjetivo(plano.objetivo)}</p>
+              )}
             </div>
-            {plano?.objetivo && (
-              <span className="ml-auto text-xs bg-orange-50 border border-orange-200 text-[#ff6600] px-3 py-1 rounded-full font-medium">
-                {plano.objetivo.replace(/_/g, " ")}
-              </span>
-            )}
-            <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+            <span className={`shrink-0 text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap ${
               jaValidado ? "bg-green-100 text-green-700"
               : emRevisao ? "bg-blue-100 text-blue-700"
               : "bg-yellow-100 text-yellow-700"
@@ -348,7 +354,7 @@ export default function PersonalPlanDetail() {
         {plano?.feedback_usuario && (
           <div className="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-5">
             <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-2">Feedback do aluno</p>
-            <p className="text-sm text-blue-900 leading-relaxed">{plano.feedback_usuario}</p>
+            <p className="text-sm text-blue-900 leading-relaxed break-words whitespace-pre-wrap">{plano.feedback_usuario}</p>
           </div>
         )}
 

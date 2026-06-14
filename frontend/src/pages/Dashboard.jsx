@@ -4,21 +4,20 @@ import AppLayout from "../components/AppLayout";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../services/api";
 
+function parseArr(v) {
+  try { return v ? JSON.parse(v) : []; } catch { return []; }
+}
+
+function formatArr(v) {
+  const arr = parseArr(v);
+  if (arr.length > 0) return arr.map(s => s.replace(/_/g, " ")).join(", ");
+  return typeof v === "string" ? v.replace(/_/g, " ") : "—";
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const [perfil, setPerfil] = useState(null);
   const [historico, setHistorico] = useState([]);
-
-  const MOCK_PERFIL = {
-    peso: 82,
-    altura: 178,
-    idade: 27,
-    objetivo: "ganho_de_massa",
-    nivel_atv_fisica: "moderado",
-  };
-  const MOCK_HISTORICO = [
-    { peso: 82.0 }, { peso: 82.8 }, { peso: 83.5 },
-  ];
 
   useEffect(() => {
     api.get("/usuario/perfil-fisico").then(setPerfil).catch(() => setPerfil(null));
@@ -34,7 +33,7 @@ export default function Dashboard() {
     },
     {
       label: "Objetivo",
-      value: perfil?.objetivo ?? "—",
+      value: perfil?.objetivo ? formatArr(perfil.objetivo) : "—",
       icon: "◎",
       color: "text-blue-400",
     },

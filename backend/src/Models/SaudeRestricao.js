@@ -9,9 +9,13 @@ module.exports = (sequelize, DataTypes) => {
   }
   SaudeRestricao.init({
     tem_lesao: DataTypes.STRING,
+    tem_lesao_desc: DataTypes.TEXT,
     dores_frequentes: DataTypes.STRING,
+    dores_frequentes_desc: DataTypes.TEXT,
     limitacao_fisica: DataTypes.STRING,
+    limitacao_fisica_desc: DataTypes.TEXT,
     exercicio_desconforto: DataTypes.STRING,
+    exercicio_desconforto_desc: DataTypes.TEXT,
     acompanhamento_medico: DataTypes.STRING,
     usa_medicamentos: DataTypes.STRING,
     parq: DataTypes.TEXT,

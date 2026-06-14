@@ -19,19 +19,13 @@ export default function Historico() {
     fetchHistorico();
   }, []);
 
-  const MOCK_REGISTROS = [
-    { id: 1, peso: 82.0, obervacoes: "Sentindo bem, treino forte hoje.", createdAt: "2026-04-20T10:00:00Z" },
-    { id: 2, peso: 82.8, obervacoes: "Semana pesada, retenção hídrica.", createdAt: "2026-04-13T10:00:00Z" },
-    { id: 3, peso: 83.5, obervacoes: "Início do programa.", createdAt: "2026-04-06T10:00:00Z" },
-  ];
-
   async function fetchHistorico() {
     setLoading(true);
     try {
       const data = await api.get("/progresso");
       setRegistros(Array.isArray(data) ? data : []);
     } catch {
-      setRegistros(MOCK_REGISTROS);
+      setRegistros([]);
     } finally {
       setLoading(false);
     }
@@ -224,16 +218,16 @@ export default function Historico() {
             <div className="space-y-3">
               {registros.map((r, i) => (
                 <div key={r.id ?? i} className="bg-white border border-gray-200 rounded-xl p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
                       <p className="text-gray-900 font-semibold text-lg">{r.peso} kg</p>
                       {r.obervacoes && (
-                        <p className="text-gray-400 text-sm mt-0.5">{r.obervacoes}</p>
+                        <p className="text-gray-400 text-sm mt-0.5 break-words whitespace-pre-wrap">{r.obervacoes}</p>
                       )}
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-start gap-3 shrink-0">
                       <div className="text-right">
-                        <p className="text-gray-500 text-xs">
+                        <p className="text-gray-500 text-xs whitespace-nowrap">
                           {r.createdAt
                             ? new Date(r.createdAt).toLocaleDateString("pt-BR", {
                                 day: "2-digit",

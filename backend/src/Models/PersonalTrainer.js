@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     nome: DataTypes.STRING,
     email: DataTypes.STRING,
     senha: DataTypes.STRING,
-    cref: DataTypes.STRING,
+    cref: { type: DataTypes.STRING, unique: true },
   }, {
     sequelize,
     modelName: 'PersonalTrainer',

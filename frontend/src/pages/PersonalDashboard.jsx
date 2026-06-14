@@ -108,31 +108,36 @@ export default function PersonalDashboard() {
           <div className="space-y-3">
             {lista.map(plano => {
               const usuario = plano.Perfilfisico?.Usuario;
+              const objetivo = (() => {
+                try {
+                  const arr = plano.objetivo ? JSON.parse(plano.objetivo) : [];
+                  if (arr.length > 0) return arr.map(s => s.replace(/_/g, " ")).join(", ");
+                } catch {}
+                return plano.objetivo?.replace(/_/g, " ") ?? null;
+              })();
               return (
                 <Link
                   key={plano.id}
                   to={`/personal/plano/${plano.id}`}
-                  className="bg-white border border-gray-200 rounded-xl p-5 flex items-center justify-between gap-4 hover:border-[#ff6600]/40 transition-colors block"
+                  className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center gap-3 hover:border-[#ff6600]/40 transition-colors block"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-[#ff6600]/10 flex items-center justify-center font-bold text-[#ff6600]">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="w-10 h-10 rounded-full bg-[#ff6600]/10 flex items-center justify-center font-bold text-[#ff6600] shrink-0">
                       {usuario?.nome?.[0]?.toUpperCase() ?? "U"}
                     </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{usuario?.nome ?? "Usuário"}</p>
-                      <p className="text-xs text-gray-400">{usuario?.email}</p>
+                    <div className="min-w-0">
+                      <p className="font-medium text-gray-900 truncate">{usuario?.nome ?? "Usuário"}</p>
+                      <p className="text-xs text-gray-400 truncate">{usuario?.email}</p>
+                      {objetivo && (
+                        <p className="text-xs text-gray-500 mt-0.5 break-words">{objetivo}</p>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    {plano.objetivo && (
-                      <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
-                        {plano.objetivo.replace(/_/g, " ")}
-                      </span>
-                    )}
-                    <span className="text-xs text-gray-400">
-                      {new Date(plano.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  <div className="flex items-center gap-3 shrink-0 flex-wrap">
+                    <span className="text-xs text-gray-400 whitespace-nowrap">
+                      {new Date(plano.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })}
                     </span>
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap ${
                       plano.status === "pendente" ? "bg-yellow-100 text-yellow-700"
                       : plano.status === "revisao" ? "bg-blue-100 text-blue-700"
                       : "bg-green-100 text-green-700"
